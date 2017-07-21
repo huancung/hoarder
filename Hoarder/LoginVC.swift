@@ -7,23 +7,61 @@
 //
 
 import UIKit
+import FirebaseAuth
 
 class LoginVC: UIViewController {
     @IBOutlet weak var emailText: UITextField!
     @IBOutlet weak var passwordText: UITextField!
-
+    @IBOutlet weak var rememberMeSwitch: UISwitch!
+    
+    var blurEffectView: UIVisualEffectView?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        let blurEffect = UIBlurEffect(style: UIBlurEffectStyle.regular)
+        blurEffectView = UIVisualEffectView(effect: blurEffect)
+        getStoredLogin()
         // Do any additional setup after loading the view, typically from a nib.
     }
 
     @IBAction func loginButtonPressed(_ sender: Any) {
-        if emailText.text == nil {
+        
+        if let email = emailText.text, !email.isEmpty {
+            var errors = false
+            var password = ""
             
-        } else if passwordText == nil {
+            if let pw = passwordText.text, !pw.isEmpty {
+                password = pw
+            } else {
+                AlertUtil.alert(message: "You forgot to enter your password!", targetViewController: self)
+                errors = true
+            }
+            
+            if !errors {
+                startBusyModal()
+                Auth.auth().signIn(withEmail: email, password: password, completion: { (returnUser, returnError) in
+                    if let user = returnUser {
+                        print(user.uid)
+                        print(user.email!)
+                        self.stopBusyModal()
+                        
+                        if self.rememberMeSwitch.isOn {
+                            self.storeLogin(email: email, password: password)
+                        } else {
+                            self.deleteStoredLogin()
+                        }
+                        
+                        self.performSegue(withIdentifier: "CollectionListSegue", sender: nil)
+                    } else if let error = returnError {
+                        AlertUtil.alert(message: error.localizedDescription, targetViewController: self)
+                        self.stopBusyModal()
+                    }
+                    
+                })
+
+            }
             
         }
-        performSegue(withIdentifier: "CollectionListSegue", sender: nil)
     }
     
     @IBAction func newAccountButtonPressed(_ sender: Any) {
@@ -33,5 +71,69 @@ class LoginVC: UIViewController {
     @IBAction func forgotButtonPressed(_ sender: Any) {
         
     }
+    
+    func storeLogin(email: String, password: String) {
+        let defaults = UserDefaults.standard
+        
+        defaults.set(email, forKey: "email")
+        defaults.set(password, forKey: "password")
+        defaults.set(rememberMeSwitch.isOn, forKey: "remember")
+    }
+    
+    func deleteStoredLogin() {
+        let defaults = UserDefaults.standard
+        
+        defaults.set("", forKey: "email")
+        defaults.set("", forKey: "password")
+        defaults.set(rememberMeSwitch.isOn, forKey: "remember")
+    }
+    
+    
+    
+    func getStoredLogin() {
+        let defaults = UserDefaults.standard
+        
+        if let email = defaults.string(forKey: "email") {
+            emailText.text = email
+        }
+        
+        if let password = defaults.string(forKey: "password") {
+            passwordText.text = password
+        }
+        
+        rememberMeSwitch.isOn = defaults.bool(forKey: "remember")
+    }
+    
+    /**
+     Removes a busy modal from the view if there is one being displayed.
+     */
+    func stopBusyModal() {
+        if blurEffectView != nil {
+            blurEffectView?.removeFromSuperview()
+        }
+    }
+    
+    /**
+     Adds a busy modal overlay that blocks out controls while app is busy.
+     */
+    func startBusyModal() {
+        if let modal = blurEffectView {
+            
+            modal.frame = view.bounds
+            modal.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+            
+            let actInd: UIActivityIndicatorView = UIActivityIndicatorView()
+            actInd.center = modal.center
+            actInd.hidesWhenStopped = true
+            actInd.activityIndicatorViewStyle = .whiteLarge
+            modal.addSubview(actInd)
+            actInd.startAnimating()
+            
+            view.addSubview(modal)
+        }
+        
+    }
+    
+    
 }
 

@@ -15,6 +15,7 @@ public class AlertUtil {
     static func alert(message: String, targetViewController: UIViewController) {
         let alert = UIAlertController(title: "Oops!", message: message, preferredStyle: UIAlertControllerStyle.alert)
         alert.addAction(UIAlertAction(title: "Dismiss", style: UIAlertActionStyle.default, handler: nil))
+        targetViewController.present(alert, animated: true, completion: nil)
     }
     
     static func message(title: String, message: String, targetViewController: UIViewController) {

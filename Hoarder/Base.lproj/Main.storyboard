@@ -160,6 +160,7 @@
                     <connections>
                         <outlet property="emailText" destination="Bpr-4p-qqc" id="kDH-AT-ihb"/>
                         <outlet property="passwordText" destination="B3l-Ft-UxT" id="oK4-ie-jB0"/>
+                        <outlet property="rememberMeSwitch" destination="TI1-Ep-luh" id="gdt-26-bQr"/>
                         <segue destination="LKe-dz-gJf" kind="show" identifier="SignUpSegue" id="ug9-Jl-WSW"/>
                         <segue destination="eld-fu-arW" kind="show" identifier="CollectionListSegue" id="Z8O-4f-NRu"/>
                     </connections>
@@ -194,7 +195,7 @@
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <inset key="separatorInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                 <prototypes>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" rowHeight="104" id="QzD-0E-Egd">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" reuseIdentifier="cell" rowHeight="104" id="QzD-0E-Egd">
                                         <rect key="frame" x="0.0" y="28" width="375" height="104"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="QzD-0E-Egd" id="v5l-Um-yRz">
@@ -388,6 +389,8 @@
                     </view>
                     <connections>
                         <outlet property="emailText" destination="AMc-kk-lnr" id="crE-hz-scs"/>
+                        <outlet property="firstNameText" destination="20q-sk-y2u" id="OHJ-HF-fUi"/>
+                        <outlet property="lastNameText" destination="ThK-V8-Nn4" id="vJC-Ap-NxO"/>
                         <outlet property="passwordText" destination="U1h-Yx-bYT" id="aeN-tI-2P3"/>
                         <outlet property="reenterPasswordText" destination="06o-4F-K58" id="hp1-iz-27x"/>
                     </connections>

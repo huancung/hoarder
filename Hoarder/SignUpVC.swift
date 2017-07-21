@@ -9,18 +9,19 @@
 import UIKit
 import Firebase
 import FirebaseAuth
+import FirebaseDatabase
 
 class SignUpVC: UIViewController {
     @IBOutlet weak var emailText: UITextField!
     @IBOutlet weak var passwordText: UITextField!
     @IBOutlet weak var reenterPasswordText: UITextField!
-    var overlay : UIView?
+    @IBOutlet weak var firstNameText: UITextField!
+    @IBOutlet weak var lastNameText: UITextField!
+    
     var blurEffectView: UIVisualEffectView?
-    var currentModal: UIVisualEffectView?
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        overlay = UIView(frame: view.frame)
         let blurEffect = UIBlurEffect(style: UIBlurEffectStyle.regular)
         blurEffectView = UIVisualEffectView(effect: blurEffect)
         // Do any additional setup after loading the view.
@@ -59,6 +60,20 @@ class SignUpVC: UIViewController {
                 if let user = returnUser {
                     print(user.uid)
                     print(user.email!)
+                    
+                    var firstName = ""
+                    var lastName = ""
+                    
+                    if let fName = self.firstNameText.text, !fName.isEmpty {
+                        firstName = fName
+                    }
+                    
+                    if let lName = self.lastNameText.text, !lName.isEmpty {
+                        lastName = lName
+                    }
+                    
+                    self.savePersonalInfo(uid: user.uid, firstName: firstName, lastName: lastName, email: user.email!)
+                    
                     self.stopBusyModal()
                     
                     //Todo Save Personal info
@@ -74,15 +89,22 @@ class SignUpVC: UIViewController {
             
         }
         
+    }
+    
+    func savePersonalInfo(uid: String, firstName: String, lastName: String, email: String) {
+        let refPersonalInfo = Database.database().reference().child("personalInfo")
         
+        let newUser = ["uid" : uid, "firstName": firstName, "lastName": lastName, "email": email]
+        
+        refPersonalInfo.child(uid).setValue(newUser)
     }
     
     /**
      Removes a busy modal from the view if there is one being displayed.
     */
     func stopBusyModal() {
-        if currentModal != nil {
-            currentModal?.removeFromSuperview()
+        if blurEffectView != nil {
+            blurEffectView?.removeFromSuperview()
         }
     }
     
@@ -91,7 +113,6 @@ class SignUpVC: UIViewController {
     */
     func startBusyModal() {
         if let modal = blurEffectView {
-            currentModal = modal
 
             modal.frame = view.bounds
             modal.autoresizingMask = [.flexibleWidth, .flexibleHeight]
