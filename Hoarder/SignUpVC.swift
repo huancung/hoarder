@@ -31,10 +31,15 @@ class SignUpVC: UIViewController {
         dismiss(animated: true, completion: nil)
     }
     
+    @IBAction func dismissKeyboard(_ sender: Any) {
+        self.view.endEditing(true)
+    }
+    
     @IBAction func createNewAccountButtonPressed(_ sender: Any) {
         var errors = false
         var errorMessage = ""
         
+        // Verifying entries
         if let text = emailText.text, text.isEmpty {
             errorMessage = "\(errorMessage)\nEmail is required."
             errors = true
@@ -56,6 +61,7 @@ class SignUpVC: UIViewController {
             //Create account
             self.view.endEditing(true)
             startBusyModal()
+            
             Auth.auth().createUser(withEmail: emailText.text!, password: passwordText.text!, completion: { (returnUser, returnError) in
                 if let user = returnUser {
                     print(user.uid)
@@ -73,25 +79,27 @@ class SignUpVC: UIViewController {
                     }
                     
                     self.savePersonalInfo(uid: user.uid, firstName: firstName, lastName: lastName, email: user.email!)
+                    user.sendEmailVerification(completion: nil)
                     
                     self.stopBusyModal()
                     
-                    //Todo Save Personal info
-                    
-                    //Auto login at this point
-                    AlertUtil.message(title: "Hooray!", message: "You're account has been created! Happy hoarding!", targetViewController: self)
-                    //self.dismiss(animated: true, completion: nil)
+                    AlertUtil.message(title: "Hooray!", message: "You're account has been created! Please verify your email. Happy hoarding!", targetViewController: self)
                 } else if let error = returnError {
                     self.stopBusyModal()
                     AlertUtil.alert(message: error.localizedDescription, targetViewController: self)
                 }
             })
-            
         }
-        
     }
     
-    func savePersonalInfo(uid: String, firstName: String, lastName: String, email: String) {
+    /**
+     Save user's personal information.
+     - parameters
+        - uid: Unique ID provided by the user account
+        - firstName: User's first name
+        - lastName: User's last name
+    */
+    private func savePersonalInfo(uid: String, firstName: String, lastName: String, email: String) {
         let refPersonalInfo = Database.database().reference().child("personalInfo")
         
         let newUser = ["uid" : uid, "firstName": firstName, "lastName": lastName, "email": email]
@@ -102,7 +110,7 @@ class SignUpVC: UIViewController {
     /**
      Removes a busy modal from the view if there is one being displayed.
     */
-    func stopBusyModal() {
+    private func stopBusyModal() {
         if blurEffectView != nil {
             blurEffectView?.removeFromSuperview()
         }
@@ -111,7 +119,7 @@ class SignUpVC: UIViewController {
     /**
      Adds a busy modal overlay that blocks out controls while app is busy.
     */
-    func startBusyModal() {
+    private func startBusyModal() {
         if let modal = blurEffectView {
 
             modal.frame = view.bounds
@@ -126,10 +134,9 @@ class SignUpVC: UIViewController {
         
             view.addSubview(modal)
         }
-
     }
     
-    @IBAction func dismissKeyboard(_ sender: Any) {
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         self.view.endEditing(true)
     }
 }

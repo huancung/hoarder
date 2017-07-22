@@ -24,6 +24,10 @@ class LoginVC: UIViewController {
         // Do any additional setup after loading the view, typically from a nib.
     }
 
+    @IBAction func dismissKeyboard(_ sender: Any) {
+        self.view.endEditing(true)
+    }
+    
     @IBAction func loginButtonPressed(_ sender: Any) {
         
         if let email = emailText.text, !email.isEmpty {
@@ -51,7 +55,12 @@ class LoginVC: UIViewController {
                             self.deleteStoredLogin()
                         }
                         
-                        self.performSegue(withIdentifier: "CollectionListSegue", sender: nil)
+                        if user.isEmailVerified {
+                            self.performSegue(withIdentifier: "CollectionListSegue", sender: nil)
+                        } else {
+                            AlertUtil.alert(message: "Please verify your email before logging in!", targetViewController: self)
+                        }
+                        
                     } else if let error = returnError {
                         AlertUtil.alert(message: error.localizedDescription, targetViewController: self)
                         self.stopBusyModal()
@@ -72,7 +81,13 @@ class LoginVC: UIViewController {
         
     }
     
-    func storeLogin(email: String, password: String) {
+    /**
+     Stores the login information.
+     - parameters:
+        - email: User's email address
+        - password: User's password
+    */
+    private func storeLogin(email: String, password: String) {
         let defaults = UserDefaults.standard
         
         defaults.set(email, forKey: "email")
@@ -80,7 +95,10 @@ class LoginVC: UIViewController {
         defaults.set(rememberMeSwitch.isOn, forKey: "remember")
     }
     
-    func deleteStoredLogin() {
+    /**
+     Deletes any stored login information.
+    */
+    private func deleteStoredLogin() {
         let defaults = UserDefaults.standard
         
         defaults.set("", forKey: "email")
@@ -88,9 +106,10 @@ class LoginVC: UIViewController {
         defaults.set(rememberMeSwitch.isOn, forKey: "remember")
     }
     
-    
-    
-    func getStoredLogin() {
+    /**
+     Retrieves stored login information.
+    */
+    private func getStoredLogin() {
         let defaults = UserDefaults.standard
         
         if let email = defaults.string(forKey: "email") {
@@ -107,7 +126,7 @@ class LoginVC: UIViewController {
     /**
      Removes a busy modal from the view if there is one being displayed.
      */
-    func stopBusyModal() {
+    private func stopBusyModal() {
         if blurEffectView != nil {
             blurEffectView?.removeFromSuperview()
         }
@@ -116,7 +135,7 @@ class LoginVC: UIViewController {
     /**
      Adds a busy modal overlay that blocks out controls while app is busy.
      */
-    func startBusyModal() {
+    private func startBusyModal() {
         if let modal = blurEffectView {
             
             modal.frame = view.bounds
@@ -131,9 +150,9 @@ class LoginVC: UIViewController {
             
             view.addSubview(modal)
         }
-        
     }
-    
-    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        self.view.endEditing(true)
+    }
 }
 
