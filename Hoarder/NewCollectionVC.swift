@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Firebase
 import FirebaseAuth
 import FirebaseDatabase
 
@@ -15,7 +16,7 @@ class NewCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataS
     @IBOutlet weak var categoryPicker: UIPickerView!
     @IBOutlet weak var descriptionText: UITextView!
 
-    let collectionCategories = ["Autos", "Clothing", "Toys", "Craft Supplies", "Furniture", "Household Goods", "Electronics", "Art", "Animals", "General Stuff", "Books", "Accessories", "Supplies", "Tools", "Toiletries"]
+    let collectionCategories = ["Auto Supplies", "Clothing", "Toys", "Craft Supplies", "Furniture", "Household Goods", "Electronics", "Art", "Animals", "General Stuff", "Books", "Accessories", "Supplies", "Tools", "Toiletries", "Memorabilia", "Movies", "Antiques", "Hobby", "Other", "Garden", "Outdoors", "Food", "Wine and Spirits", "Baby and Kids", "Sports"]
     
     var sortedCollectionCategories: [String]!
     
@@ -28,13 +29,19 @@ class NewCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataS
 
     @IBAction func createCollectionPressed(_ sender: Any) {
         if let collectionName = collectionNameText.text, !collectionName.isEmpty {
-            // Save the entries
-            // display alert
-            AlertUtil.message(title: "New Collection Created!", message: "Now you can start adding items to this collection!", targetViewController: self)
+            var description = ""
+            
             if let desc = descriptionText.text, !desc.isEmpty {
-                let category = sortedCollectionCategories[categoryPicker.selectedRow(inComponent: 0)]
-                saveCollectionInfo(collectionName: collectionName, category: category, description: desc)
+                description = desc
             }
+            
+            let category = sortedCollectionCategories[categoryPicker.selectedRow(inComponent: 0)]
+            
+            AlertUtil.message(title: "New Collection Created!", message: "Now you can start adding items to this collection!", targetViewController: self)
+            
+            saveCollectionInfo(collectionName: collectionName, category: category, description: description)
+        } else {
+            AlertUtil.alert(message: "Please add a collection name!", targetViewController: self)
         }
     }
     
@@ -76,16 +83,30 @@ class NewCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataS
         self.view.endEditing(true)
     }
     
-    func getTextForPicker(atRow: Int) -> String {
+    /**
+     Returns the text associated with the index of selected from the category picker.
+     - parameters
+        - atRow: Index of the selection in the picker.
+    */
+    private func getTextForPicker(atRow: Int) -> String {
         return sortedCollectionCategories[atRow]
     }
     
+    /**
+     Saves the collection info.
+     - parameters
+        - collectionName: Name of the collection.
+        - category: Category of that the collection.
+        - description: Description of the collection.
+    */
     private func saveCollectionInfo(collectionName: String, category: String, description: String) {
         let refCollectionInfo = Database.database().reference().child("collections")
         
+        
+        
         if let uid = Auth.auth().currentUser?.uid {
             let key = refCollectionInfo.child("collections").childByAutoId().key
-            let newCollection = ["ownerUid" : uid, "name": collectionName, "category": category ,"description": description]
+            let newCollection = ["ownerUid" : uid, "name": collectionName, "category": category ,"description": description, "collectionID": key, "itemCount": 0, "creationDate": DateTimeUtilities.getTimestamp()] as [String : Any]
             
             refCollectionInfo.child(uid).child(key).setValue(newCollection)
         }

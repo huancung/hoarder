@@ -151,6 +151,7 @@ class LoginVC: UIViewController {
             view.addSubview(modal)
         }
     }
+    
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         self.view.endEditing(true)
     }
