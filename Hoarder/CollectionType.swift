@@ -15,10 +15,11 @@ public class CollectionType {
     private var _collectionID = ""
     private var _ownerID = ""
     private var _itemCount = 0
+    private var _isFavorite = "false"
     private var _dateCreated = 0.0
     private var _dateCreatedString = ""
     
-    init(collectionName: String, category: String, description: String, collectionID: String, itemCount: Int, ownerID: String, creationDateString: String, creationDate: Double) {
+    init(collectionName: String, category: String, description: String, collectionID: String, itemCount: Int, ownerID: String, creationDateString: String, creationDate: Double, isFavorite: String) {
         _collectionName = collectionName
         _category = category
         _description = description
@@ -27,6 +28,7 @@ public class CollectionType {
         _dateCreated = creationDate
         _dateCreatedString = creationDateString
         _itemCount = itemCount
+        _isFavorite = isFavorite
     }
     
     var collectionName: String {
@@ -77,4 +79,9 @@ public class CollectionType {
         }
     }
     
+    var isFavorite: String {
+        get{
+            return _isFavorite
+        }
+    }
 }

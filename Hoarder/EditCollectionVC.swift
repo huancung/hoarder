@@ -7,11 +7,18 @@
 //
 
 import UIKit
+import FirebaseDatabase
+import FirebaseAuth
 
 class EditCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource{
     @IBOutlet weak var collectionNameText: UITextField!
     @IBOutlet weak var categoryPicker: UIPickerView!
     @IBOutlet weak var descriptionText: UITextView!
+    @IBOutlet weak var favoriteButton: UIButton!
+    var collectionObj: CollectionType!
+    var unselectedAlpha = 0.65
+    var selectedAlpha = 1.0
+    var isFavorite = "false"
     
     let collectionCategories = ["Auto Supplies", "Clothing", "Toys", "Craft Supplies", "Furniture", "Household Goods", "Electronics", "Art", "Animals", "General Stuff", "Books", "Accessories", "Supplies", "Tools", "Toiletries", "Memorabilia", "Movies", "Antiques", "Hobby", "Other", "Garden", "Outdoors", "Food", "Wine and Spirits", "Baby and Kids", "Sports"]
 
@@ -21,6 +28,10 @@ class EditCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewData
         super.viewDidLoad()
         categoryPicker.delegate = self
         sortedCollectionCategories = collectionCategories.sorted()
+        
+        if collectionObj != nil {
+            loadData()
+        }
     }
     
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
@@ -65,9 +76,61 @@ class EditCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewData
     private func getTextForPicker(atRow: Int) -> String {
         return sortedCollectionCategories[atRow]
     }
+    
+    private func loadData() {
+        collectionNameText.text = collectionObj?.collectionName
+        descriptionText.text = collectionObj?.description
+        setFavorite(favorite: collectionObj!.isFavorite)
+        
+        let category = collectionObj?.category
+        var index = 0
+        
+        repeat{
+            let s = sortedCollectionCategories[index]
+            if s == category {
+                categoryPicker.selectRow(index, inComponent: 0, animated: false)
+                break
+            }
+            index += 1
+        } while (index < sortedCollectionCategories.count)
+    }
+    
+    private func setFavorite(favorite: String) {
+        if "true" == favorite {
+            favoriteButton.alpha = CGFloat(selectedAlpha)
+            isFavorite = "true"
+        } else {
+            favoriteButton.alpha = CGFloat(unselectedAlpha)
+            isFavorite = "false"
+        }
+    }
 
+    @IBAction func saveButtonPressed(_ sender: Any) {
+        if let collectionName = collectionNameText.text, !collectionName.isEmpty {
+            var description = ""
+            
+            if let desc = descriptionText.text, !desc.isEmpty {
+                description = desc
+            }
+            
+            let category = sortedCollectionCategories[categoryPicker.selectedRow(inComponent: 0)]
+            
+            saveCollectionInfo(collectionName: collectionName, category: category, description: description)
+        } else {
+            AlertUtil.alert(message: "Please add a collection name!", targetViewController: self)
+        }
+    }
+    
     @IBAction func cancelButtonPressed(_ sender: Any) {
         dismiss(animated: true, completion: nil)
+    }
+    
+    @IBAction func favoriteButtonPressed(_ sender: Any) {
+        if isFavorite == "true" {
+            setFavorite(favorite: "false")
+        } else {
+            setFavorite(favorite: "true")
+        }
     }
     
     @IBAction func trashButtonPressed(_ sender: Any) {
@@ -75,9 +138,39 @@ class EditCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewData
         alert.addAction(UIAlertAction(title: "NO!", style: .default) { (alert) in
         })
         alert.addAction(UIAlertAction(title: "YES", style: .default) { (alert) in
-            // Delete the collection
+            self.deleteCollection()
         })
         self.present(alert, animated: true, completion: nil)
     }
     
+    /**
+     Saves the collection info.
+     - parameters
+     - collectionName: Name of the collection.
+     - category: Category of that the collection.
+     - description: Description of the collection.
+     */
+    private func saveCollectionInfo(collectionName: String, category: String, description: String) {
+        let refCollectionInfo = Database.database().reference().child("collections")
+
+        if let uid = Auth.auth().currentUser?.uid {
+            let collectionID = collectionObj.collectionID
+            let creationDate =  collectionObj.dateCreated
+            let newCollection = ["ownerUid" : uid, "name": collectionName, "category": category ,"description": description, "collectionID": collectionID, "itemCount": 0, "creationDate": creationDate, "isFavorite": isFavorite] as [String : Any]
+            
+            refCollectionInfo.child(uid).child(collectionID).setValue(newCollection)
+        }
+        
+        dismiss(animated: true, completion: nil)
+    }
+    
+    private func deleteCollection() {
+        let refCollectionInfo = Database.database().reference().child("collections")
+        
+        if let uid = Auth.auth().currentUser?.uid {
+            let collectionID = collectionObj.collectionID
+            refCollectionInfo.child(uid).child(collectionID).setValue(nil)
+        }
+        dismiss(animated: true, completion: nil)
+    }
 }

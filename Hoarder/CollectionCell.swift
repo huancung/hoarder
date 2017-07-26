@@ -13,6 +13,7 @@ class CollectionCell: UITableViewCell {
     @IBOutlet weak var itemCountText: UILabel!
     @IBOutlet weak var categoryText: UILabel!
     @IBOutlet weak var descriptionText: UILabel!
+    @IBOutlet weak var editButton: UIButton!
 
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -29,5 +30,9 @@ class CollectionCell: UITableViewCell {
         itemCountText.text = "Items in this collection: \(collection.itemCount)"
         categoryText.text = "Category: \(collection.category)"
         descriptionText.text = collection.description
+    }
+    
+    public func setEditIndex(index: Int) {
+        editButton.tag = index
     }
 }

@@ -12,10 +12,15 @@ import FirebaseAuth
 
 class CollectionListVC: UIViewController, UITableViewDelegate,UITableViewDataSource {
     @IBOutlet weak var collectionTableView: UITableView!
+    @IBOutlet weak var sortSegController: UISegmentedControl!
+    
+    var blurEffectView: UIVisualEffectView?
     var collectionList = [CollectionType]()
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        let blurEffect = UIBlurEffect(style: UIBlurEffectStyle.regular)
+        blurEffectView = UIVisualEffectView(effect: blurEffect)
         collectionTableView.delegate = self
         collectionTableView.dataSource = self
         collectionTableView.backgroundColor = UIColor.clear
@@ -26,11 +31,14 @@ class CollectionListVC: UIViewController, UITableViewDelegate,UITableViewDataSou
         populateCollectionData()
     }
     
+    @IBAction func segControlValueChanged(_ sender: Any) {
+        setSortOrder(sortBy: self.sortSegController.selectedSegmentIndex)
+        collectionTableView.reloadData()
+    }
+    
+    
     @IBAction func addCollectionPressed(_ sender: Any) {
         performSegue(withIdentifier: "NewCollectionSegue", sender: nil)
-    }
-    @IBAction func settingsButtonPressed(_ sender: Any) {
-        print("set")
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -44,6 +52,7 @@ class CollectionListVC: UIViewController, UITableViewDelegate,UITableViewDataSou
     
     func configureCell(cell: CollectionCell, indexPath: IndexPath) {
         let collection = collectionList[indexPath.row]
+        cell.setEditIndex(index: indexPath.row)
         cell.updateUI(collection: collection)
     }
     
@@ -66,7 +75,7 @@ class CollectionListVC: UIViewController, UITableViewDelegate,UITableViewDataSou
     private func populateCollectionData() {
         let uid = Auth.auth().currentUser?.uid
         let collectionRef = Database.database().reference().child("collections").child(uid!)
-        
+        startBusyModal()
         collectionRef.observeSingleEvent(of: DataEventType.value, with: { (snapshot) in
             if let collectionSet = snapshot.value as? NSDictionary {
                 self.collectionList.removeAll()
@@ -80,19 +89,85 @@ class CollectionListVC: UIViewController, UITableViewDelegate,UITableViewDataSou
                     let ownerID = myCollection["ownerUid"] as! String
                     let itemCount = myCollection["itemCount"] as! Int
                     let creationDate = myCollection["creationDate"] as! Double
+                    let isFavorite = myCollection["isFavorite"] as! String
                     let creationDateString = DateTimeUtilities.formatTimeInterval(timeInterval: myCollection["creationDate"] as! Double)
                    
-                    let collectionObj = CollectionType(collectionName: name, category: category, description: description, collectionID: collectionID, itemCount: itemCount, ownerID: ownerID, creationDateString: creationDateString, creationDate: creationDate)
+                    let collectionObj = CollectionType(collectionName: name, category: category, description: description, collectionID: collectionID, itemCount: itemCount, ownerID: ownerID, creationDateString: creationDateString, creationDate: creationDate, isFavorite: isFavorite)
                     self.collectionList.append(collectionObj)
                 }
-                self.collectionList = self.collectionList.sorted(by: {$0.dateCreated > $1.dateCreated})
+                
+                
+                self.setSortOrder(sortBy: self.sortSegController.selectedSegmentIndex)
+                self.stopBusyModal()
                 self.collectionTableView.reloadData()
             }
         })
     }
     
-    
-    @IBAction func setupButtonPressed(_ sender: Any) {
-        performSegue(withIdentifier: "editCollectionSegue", sender: nil)
+    private func setSortOrder(sortBy: Int) {
+        switch sortBy {
+            case 0:
+                collectionList = collectionList.sorted(by: {$1.collectionName > $0.collectionName})
+            case 1:
+                collectionList = collectionList.sorted(by: {$0.dateCreated > $1.dateCreated})
+            default:
+                collectionList = collectionList.sorted(by: { (c1, c2) -> Bool in
+                    if c1.isFavorite == "true" && c2.isFavorite == "false" {
+                        return true //this will return true: c1 is priority, c2 is not
+                    }
+                    if c1.isFavorite == "false" && c2.isFavorite == "true" {
+                        return false //this will return false: c2 is priority, c1 is not
+                    }
+                    if c1.isFavorite == c2.isFavorite {
+                        return c1.collectionName < c2.collectionName // do alpha instead
+                    }
+                    return false
+                })
+        }
     }
+    
+    @IBAction func setupButtonPressed(_ sender: UIButton) {
+        print(sender.tag)
+        performSegue(withIdentifier: "editCollectionSegue", sender: collectionList[sender.tag])
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "editCollectionSegue" {
+            if let destination = segue.destination as? EditCollectionVC {
+                if let collectionobj = sender as? CollectionType {
+                    destination.collectionObj = collectionobj
+                }
+            }
+        }
+    }
+    
+    /**
+     Removes a busy modal from the view if there is one being displayed.
+     */
+    private func stopBusyModal() {
+        if blurEffectView != nil {
+            blurEffectView?.removeFromSuperview()
+        }
+    }
+    
+    /**
+     Adds a busy modal overlay that blocks out controls while app is busy.
+     */
+    private func startBusyModal() {
+        if let modal = blurEffectView {
+            
+            modal.frame = view.bounds
+            modal.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+            
+            let actInd: UIActivityIndicatorView = UIActivityIndicatorView()
+            actInd.center = modal.center
+            actInd.hidesWhenStopped = true
+            actInd.activityIndicatorViewStyle = .whiteLarge
+            modal.addSubview(actInd)
+            actInd.startAnimating()
+            
+            view.addSubview(modal)
+        }
+    }
+
 }

@@ -106,7 +106,7 @@ class NewCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataS
         
         if let uid = Auth.auth().currentUser?.uid {
             let key = refCollectionInfo.child("collections").childByAutoId().key
-            let newCollection = ["ownerUid" : uid, "name": collectionName, "category": category ,"description": description, "collectionID": key, "itemCount": 0, "creationDate": DateTimeUtilities.getTimestamp()] as [String : Any]
+            let newCollection = ["ownerUid" : uid, "name": collectionName, "category": category ,"description": description, "collectionID": key, "itemCount": 0, "creationDate": DateTimeUtilities.getTimestamp(), "isFavorite": "false"] as [String : Any]
             
             refCollectionInfo.child(uid).child(key).setValue(newCollection)
         }
