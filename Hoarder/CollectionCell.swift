@@ -14,7 +14,9 @@ class CollectionCell: UITableViewCell {
     @IBOutlet weak var categoryText: UILabel!
     @IBOutlet weak var descriptionText: UILabel!
     @IBOutlet weak var editButton: UIButton!
-
+    @IBOutlet weak var containerView: UIView!
+    
+    
     override func awakeFromNib() {
         super.awakeFromNib()
     }
@@ -34,5 +36,13 @@ class CollectionCell: UITableViewCell {
     
     public func setEditIndex(index: Int) {
         editButton.tag = index
+    }
+    
+    public func setFavorite(isFavorite: Bool) {
+        if isFavorite {
+            containerView.backgroundColor = UIColor(red: 255/255, green: 221/255, blue: 107/255, alpha: 1.0)
+        } else {
+            containerView.backgroundColor = UIColor.white
+        }
     }
 }

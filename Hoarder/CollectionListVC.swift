@@ -54,6 +54,7 @@ class CollectionListVC: UIViewController, UITableViewDelegate,UITableViewDataSou
         let collection = collectionList[indexPath.row]
         cell.setEditIndex(index: indexPath.row)
         cell.updateUI(collection: collection)
+        cell.setFavorite(isFavorite: collection.isFavorite == "true")
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -68,8 +69,7 @@ class CollectionListVC: UIViewController, UITableViewDelegate,UITableViewDataSou
 //            performSegue(withIdentifier: "ItemDetailsSegue", sender: item)
 //            
 //        }
-        
-        print("selected")
+        performSegue(withIdentifier: "ItemListSegue", sender: nil)
     }
     
     private func populateCollectionData() {
@@ -107,10 +107,6 @@ class CollectionListVC: UIViewController, UITableViewDelegate,UITableViewDataSou
     private func setSortOrder(sortBy: Int) {
         switch sortBy {
             case 0:
-                collectionList = collectionList.sorted(by: {$1.collectionName > $0.collectionName})
-            case 1:
-                collectionList = collectionList.sorted(by: {$0.dateCreated > $1.dateCreated})
-            default:
                 collectionList = collectionList.sorted(by: { (c1, c2) -> Bool in
                     if c1.isFavorite == "true" && c2.isFavorite == "false" {
                         return true //this will return true: c1 is priority, c2 is not
@@ -123,11 +119,14 @@ class CollectionListVC: UIViewController, UITableViewDelegate,UITableViewDataSou
                     }
                     return false
                 })
+            case 1:
+                collectionList = collectionList.sorted(by: {$1.collectionName > $0.collectionName})
+            default:
+                collectionList = collectionList.sorted(by: {$0.dateCreated > $1.dateCreated})
         }
     }
     
     @IBAction func setupButtonPressed(_ sender: UIButton) {
-        print(sender.tag)
         performSegue(withIdentifier: "editCollectionSegue", sender: collectionList[sender.tag])
     }
     
