@@ -111,4 +111,6 @@ class NewCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataS
             refCollectionInfo.child(uid).child(key).setValue(newCollection)
         }
     }
+    
+    
 }

@@ -46,5 +46,9 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>NSCameraUsageDescription</key>
+	<string>Hoarders app needs to access your camera for photos.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Hoarders app needs to access to your photo library.</string>
 </dict>
 </plist>

@@ -69,7 +69,7 @@ class CollectionListVC: UIViewController, UITableViewDelegate,UITableViewDataSou
 //            performSegue(withIdentifier: "ItemDetailsSegue", sender: item)
 //            
 //        }
-        performSegue(withIdentifier: "ItemListSegue", sender: nil)
+        performSegue(withIdentifier: "ItemListSegue", sender: collectionList[indexPath.row].collectionID)
     }
     
     private func populateCollectionData() {
@@ -135,6 +135,12 @@ class CollectionListVC: UIViewController, UITableViewDelegate,UITableViewDataSou
             if let destination = segue.destination as? EditCollectionVC {
                 if let collectionobj = sender as? CollectionType {
                     destination.collectionObj = collectionobj
+                }
+            }
+        } else if segue.identifier == "ItemListSegue" {
+            if let destination = segue.destination as? ItemListVC {
+                if let collectionUID = sender as? String {
+                    destination.collectionUID = collectionUID
                 }
             }
         }

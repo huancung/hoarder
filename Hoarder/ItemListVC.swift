@@ -10,6 +10,7 @@ import UIKit
 
 class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     @IBOutlet weak var itemTableView: UITableView!
+    var collectionUID: String!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -42,4 +43,19 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     func configureCell(cell: CollectionCell, indexPath: IndexPath) {
         
     }
+    
+    @IBAction func addEditItemPressed(_ sender: Any) {
+        performSegue(withIdentifier: "addEditItemSegue", sender: collectionUID)
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+         if segue.identifier == "addEditItemSegue" {
+            if let destination = segue.destination as? ItemVC {
+                if let collectionUID = sender as? String {
+                    destination.collectionUID = collectionUID
+                }
+            }
+        }
+    }
+
 }
