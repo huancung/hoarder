@@ -16,7 +16,7 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
     @IBOutlet weak var nameText: UITextField!
     @IBOutlet weak var descriptionText: UITextView!
     
-    
+    var isImageSet = false
     var imagePicker: UIImagePickerController!
     var collectionUID: String!
     
@@ -49,7 +49,6 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
             //self.imagePicker.allowsEditing = true
 
             self.present(self.imagePicker, animated: true, completion: nil)
-            print("take photo")
         })
         
         let chooseFile = UIAlertAction(title: "Choose Photo", style: .default, handler: {
@@ -58,13 +57,9 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
             //self.imagePicker.allowsEditing = true
             
             self.present(self.imagePicker, animated: true, completion: nil)
-            print("Choose file")
         })
         
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: {
-            (alert: UIAlertAction!) -> Void in
-            print("Cancelled")
-        })
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
         
         optionMenu.addAction(takePhotoAction)
         optionMenu.addAction(chooseFile)
@@ -79,7 +74,6 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         imagePicker.dismiss(animated: true, completion: nil)
-        //var myImage = info[UIImagePickerControllerOriginalImage] as? UIImage
         
         var image : UIImage!
         
@@ -94,6 +88,7 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
         }
         
         itemImage.image = image
+        isImageSet = true
     }
     
     @IBAction func saveButtonPressed(_ sender: Any) {
@@ -105,7 +100,7 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
                 description = desc
             }
             
-            if true {
+            if isImageSet {
                 saveItemWithImage(itemName: name, description: description)
             } else {
                 saveItemInfo(itemName: name, description: description, imageID: "", imageURL: "")
@@ -122,7 +117,12 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
         if let image = itemImage.image {
             let storageRef = Storage.storage().reference().child("ItemImages").child("\(imageKey).png")
             
-            let imageData = UIImagePNGRepresentation(image)!
+            // Half the image size
+            let targetSize = CGSize(width: image.size.width/6, height: image.size.height/6)
+            
+            let resizedImage = resizeImage(image: image, targetSize: targetSize)
+            
+            let imageData = UIImagePNGRepresentation(resizedImage)!
             
             let metadata = StorageMetadata()
             metadata.contentType = "image/png"
@@ -135,13 +135,40 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
                 self.saveItemInfo(itemName: itemName, description: description, imageID: imageKey, imageURL: imageURL)
             })
         }
+    }
+    
+    private func resizeImage(image: UIImage, targetSize: CGSize) -> UIImage {
+        let size = image.size
         
+        let widthRatio  = targetSize.width  / image.size.width
+        let heightRatio = targetSize.height / image.size.height
+        
+        // Figure out what our orientation is, and use that to form the rectangle
+        var newSize: CGSize
+        if(widthRatio > heightRatio) {
+            newSize = CGSize(width: size.width * heightRatio, height: size.height * heightRatio)
+        } else {
+            newSize = CGSize(width: size.width * widthRatio,  height: size.height * widthRatio)
+        }
+        
+        // This is the rect that we've calculated out and this is what is actually used below
+        let rect = CGRect(x: 0, y: 0, width: newSize.width, height: newSize.height)
+        
+        // Actually do the resizing to the rect using the ImageContext stuff
+        UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
+        image.draw(in: rect)
+        let newImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        return newImage!
     }
     
     private func saveItemInfo(itemName: String, description: String, imageID: String, imageURL: String) {
-        let refCollectionInfo = Database.database().reference().child("Items")
+        
         
         if let uid = Auth.auth().currentUser?.uid {
+            let refCollectionInfo = Database.database().reference().child("items").child(collectionUID)
+            
             let key = refCollectionInfo.childByAutoId().key
             let newItem = ["ownerID": uid, "collectionID" : collectionUID, "name": itemName ,"description": description, "itemID": key, "imageID": imageID, "imageURL": imageURL, "dateAdded": DateTimeUtilities.getTimestamp()] as [String : Any]
             

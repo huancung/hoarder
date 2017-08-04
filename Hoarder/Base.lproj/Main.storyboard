@@ -414,7 +414,7 @@
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <inset key="separatorInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                 <prototypes>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="itemCell" rowHeight="135" id="lvn-6R-X4B">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="itemCell" rowHeight="135" id="lvn-6R-X4B" customClass="ItemCell" customModule="Hoarder" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="28" width="375" height="135"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="lvn-6R-X4B" id="ig5-Cz-Mmg">
@@ -484,6 +484,11 @@
                                         </tableViewCellContentView>
                                         <color key="backgroundColor" red="0.0" green="0.94509803920000002" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <inset key="separatorInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                        <connections>
+                                            <outlet property="descLbl" destination="OoZ-RP-Lsf" id="1xY-r2-pF5"/>
+                                            <outlet property="nameLbl" destination="APv-PP-LlH" id="7O0-7T-2E5"/>
+                                            <outlet property="thumbImage" destination="Jkw-Vo-Gum" id="Mdk-ja-UZM"/>
+                                        </connections>
                                     </tableViewCell>
                                 </prototypes>
                             </tableView>

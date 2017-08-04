@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		484FB5F71F34337400B0C5BE /* ItemType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 484FB5F61F34337400B0C5BE /* ItemType.swift */; };
 		485412CD1F3029B500AB206B /* ItemVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 485412CC1F3029B500AB206B /* ItemVC.swift */; };
 		4875495E1F1EFDCA00CDFE08 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4875495D1F1EFDCA00CDFE08 /* AppDelegate.swift */; };
 		487549601F1EFDCA00CDFE08 /* LoginVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4875495F1F1EFDCA00CDFE08 /* LoginVC.swift */; };
@@ -42,6 +43,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		484FB5F61F34337400B0C5BE /* ItemType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ItemType.swift; sourceTree = "<group>"; };
 		485412CC1F3029B500AB206B /* ItemVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ItemVC.swift; sourceTree = "<group>"; };
 		4875495A1F1EFDCA00CDFE08 /* Hoarder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Hoarder.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4875495D1F1EFDCA00CDFE08 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -139,6 +141,7 @@
 			isa = PBXGroup;
 			children = (
 				48E37BDF1F23E4660085E327 /* CollectionType.swift */,
+				484FB5F61F34337400B0C5BE /* ItemType.swift */,
 			);
 			name = Model;
 			sourceTree = "<group>";
@@ -378,6 +381,7 @@
 				48E37BD81F230E2E0085E327 /* StyleTextView.swift in Sources */,
 				48E37BF01F2AF92B0085E327 /* ItemCell.swift in Sources */,
 				485412CD1F3029B500AB206B /* ItemVC.swift in Sources */,
+				484FB5F71F34337400B0C5BE /* ItemType.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
