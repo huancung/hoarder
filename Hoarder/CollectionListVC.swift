@@ -24,6 +24,7 @@ class CollectionListVC: UIViewController, UITableViewDelegate,UITableViewDataSou
         collectionTableView.delegate = self
         collectionTableView.dataSource = self
         collectionTableView.backgroundColor = UIColor.clear
+        
         populateCollectionData()
     }
     

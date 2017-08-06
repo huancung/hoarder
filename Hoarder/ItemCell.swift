@@ -28,18 +28,21 @@ class ItemCell: UITableViewCell {
         nameLbl.text = item.itemName
         descLbl.text = item.description
         
-        let url = URL(string: item.imageURL)!
-        
-        DispatchQueue.global().async {
-            do {
-                let data = try Data(contentsOf: url)
-                DispatchQueue.main.async {
-                    self.thumbImage.image = UIImage(data: data)
+        if !item.imageURL.isEmpty {
+            let url = URL(string: item.imageURL)!
+            
+            DispatchQueue.global().async {
+                do {
+                    let data = try Data(contentsOf: url)
+                    DispatchQueue.main.async {
+                        self.thumbImage.image = UIImage(data: data)
+                    }
+                } catch {
+                    print("Unable to get image!")
                 }
-            } catch {
-                print("Unable to get image!")
             }
         }
+        
     }
     
 }

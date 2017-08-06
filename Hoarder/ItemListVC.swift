@@ -25,7 +25,8 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     }
 
     @IBAction func backButtonPressed(_ sender: Any) {
-        dismiss(animated: true, completion: nil)
+        //dismiss(animated: true, completion: nil)
+        self.navigationController?.popViewController(animated: true)
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -72,10 +73,6 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
                     let item = ItemType(ownerID: ownerID, collectionID: collectionID, itemID: itemID, itemName: name, description: description, imageID: imageID, imageURL: imageURL, dateAdded: dateAdded, dateAddedString: dateAddedString)
                     
                     self.itemList.append(item)
-                }
-                
-                for item in self.itemList {
-                    print(item.dateAddedString)
                 }
                 
                 self.itemTableView.reloadData()

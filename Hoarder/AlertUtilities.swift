@@ -22,7 +22,8 @@ public class AlertUtil {
         let alert = UIAlertController(title: title, message: message, preferredStyle: UIAlertControllerStyle.alert)
         //alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
         alert.addAction(UIAlertAction(title: "OK", style: .default) { (alert) in
-            targetViewController.dismiss(animated: true, completion: nil)
+            //targetViewController.dismiss(animated: true, completion: nil)
+            targetViewController.navigationController?.popViewController(animated: true)
         })
         targetViewController.present(alert, animated: true, completion: nil)
     }

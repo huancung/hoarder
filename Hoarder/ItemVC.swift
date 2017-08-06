@@ -69,7 +69,8 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
     }
 
     @IBAction func cancelButtonPressed(_ sender: Any) {
-        dismiss(animated: true, completion: nil)
+        //dismiss(animated: true, completion: nil)
+        self.navigationController?.popViewController(animated: true)
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
@@ -106,7 +107,8 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
                 saveItemInfo(itemName: name, description: description, imageID: "", imageURL: "")
             }
             
-            dismiss(animated: true, completion: nil)
+            //dismiss(animated: true, completion: nil)
+            self.navigationController?.popViewController(animated: true)
         } else {
             AlertUtil.alert(message: "Please add an item name!", targetViewController: self)
         }

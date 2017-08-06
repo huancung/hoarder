@@ -122,7 +122,8 @@ class EditCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewData
     }
     
     @IBAction func cancelButtonPressed(_ sender: Any) {
-        dismiss(animated: true, completion: nil)
+        //dismiss(animated: true, completion: nil)
+        self.navigationController?.popViewController(animated: true)
     }
     
     @IBAction func favoriteButtonPressed(_ sender: Any) {
@@ -161,7 +162,8 @@ class EditCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewData
             refCollectionInfo.child(uid).child(collectionID).setValue(newCollection)
         }
         
-        dismiss(animated: true, completion: nil)
+        //dismiss(animated: true, completion: nil)
+        self.navigationController?.popViewController(animated: true)
     }
     
     private func deleteCollection() {
@@ -171,6 +173,7 @@ class EditCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewData
             let collectionID = collectionObj.collectionID
             refCollectionInfo.child(uid).child(collectionID).setValue(nil)
         }
-        dismiss(animated: true, completion: nil)
+        //dismiss(animated: true, completion: nil)
+        self.navigationController?.popViewController(animated: true)
     }
 }
