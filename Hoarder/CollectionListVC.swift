@@ -24,10 +24,22 @@ class CollectionListVC: UIViewController, UITableViewDelegate,UITableViewDataSou
         collectionTableView.delegate = self
         collectionTableView.dataSource = self
         collectionTableView.backgroundColor = UIColor.clear
-        
+        let button = UIBarButtonItem(title: "Log Out", style: .plain, target: self, action: #selector(logout(sender:)))
+        navigationItem.leftBarButtonItem = button
         populateCollectionData()
     }
     
+    func logout(sender: UIBarButtonItem) {
+        do {
+            print("Signing out c")
+            try Auth.auth().signOut()
+            self.navigationController?.popViewController(animated: true)
+        } catch let error as NSError {
+            print(error.localizedDescription)
+        }
+        
+    }
+
     override func viewDidAppear(_ animated: Bool) {
         populateCollectionData()
     }

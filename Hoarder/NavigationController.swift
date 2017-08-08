@@ -12,12 +12,6 @@ class NavigationController: UINavigationController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-//        if let topItem = self.navigationBar.topItem {
-//            let button = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
-//            
-//            topItem.backBarButtonItem = button
-//        }
         
         let navbar = self.navigationBar
         navbar.tintColor = UIColor.darkGray

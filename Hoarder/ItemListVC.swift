@@ -46,6 +46,16 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
     }
     
+    func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
+        let delete = UITableViewRowAction(style: .destructive, title: "Delete") { (action, indexPath) in
+            print("delete \(indexPath.row)")
+            self.itemList.remove(at: indexPath.row)
+            self.itemTableView.deleteRows(at: [indexPath], with: .fade)
+        }
+        
+        return [delete]
+    }
+    
     func configureCell(cell: ItemCell, indexPath: IndexPath) {
         let item = itemList[indexPath.row]
         cell.updateUI(item: item)
