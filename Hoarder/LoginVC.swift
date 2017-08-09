@@ -21,15 +21,15 @@ class LoginVC: UIViewController {
         let blurEffect = UIBlurEffect(style: UIBlurEffectStyle.regular)
         blurEffectView = UIVisualEffectView(effect: blurEffect)
         getStoredLogin()
-        let button = UIBarButtonItem(title: "signout", style: .plain, target: self, action: #selector(logout(sender:)))
-        navigationItem.leftBarButtonItem = button
         // Do any additional setup after loading the view, typically from a nib.
     }
     
-    func logout(sender: UIBarButtonItem) {
-        print("pre Signing out")
+    override func viewDidAppear(_ animated: Bool) {
+        logout()
+    }
+    
+    func logout() {
         do {
-            print("Signing out")
             try Auth.auth().signOut()
         } catch let error as NSError {
             print(error.localizedDescription)

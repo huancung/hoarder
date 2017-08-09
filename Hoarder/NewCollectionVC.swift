@@ -18,12 +18,14 @@ class NewCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataS
 
     let collectionCategories = ["Auto Supplies", "Clothing", "Toys", "Craft Supplies", "Furniture", "Household Goods", "Electronics", "Art", "Animals", "General Stuff", "Books", "Accessories", "Supplies", "Tools", "Toiletries", "Memorabilia", "Movies", "Antiques", "Hobby", "Other", "Garden", "Outdoors", "Food", "Wine and Spirits", "Baby and Kids", "Sports"]
     
+    var parentVC: ParentViewController?
     var sortedCollectionCategories: [String]!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         categoryPicker.delegate = self
         sortedCollectionCategories = collectionCategories.sorted()
+        navigationItem.setHidesBackButton(true, animated: true)
         // Do any additional setup after loading the view.
     }
 
@@ -40,13 +42,13 @@ class NewCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataS
             AlertUtil.message(title: "New Collection Created!", message: "Now you can start adding items to this collection!", targetViewController: self)
             
             saveCollectionInfo(collectionName: collectionName, category: category, description: description)
+            parentVC?.willReloadData = true
         } else {
             AlertUtil.alert(message: "Please add a collection name!", targetViewController: self)
         }
     }
     
     @IBAction func cancelPressed(_ sender: Any) {
-        //dismiss(animated: true, completion: nil)
         self.navigationController?.popViewController(animated: true)
     }
     

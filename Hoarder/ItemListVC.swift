@@ -10,23 +10,33 @@ import UIKit
 import FirebaseDatabase
 import FirebaseAuth
 
-class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, ParentViewController {
     @IBOutlet weak var itemTableView: UITableView!
     
     var collectionUID: String!
     var itemList = [ItemType]()
-
+    var willReloadData: Bool = false
+    var parentVC: ParentViewController?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         itemTableView.delegate = self
         itemTableView.dataSource = self
         itemTableView.backgroundColor = UIColor.clear
+        if let topItem = self.navigationController?.navigationBar.topItem {
+            let button = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
+            
+            topItem.backBarButtonItem = button
+        }
+
         populateItemCellData()
     }
-
-    @IBAction func backButtonPressed(_ sender: Any) {
-        //dismiss(animated: true, completion: nil)
-        self.navigationController?.popViewController(animated: true)
+    
+    override func viewDidAppear(_ animated: Bool) {
+        if willReloadData {
+            willReloadData = false
+            populateItemCellData()
+        }
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -43,7 +53,8 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-
+        itemTableView.deselectRow(at: indexPath, animated: true)
+        // view item code here
     }
     
     func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
@@ -98,6 +109,7 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
          if segue.identifier == "addEditItemSegue" {
             if let destination = segue.destination as? ItemVC {
                 if let collectionUID = sender as? String {
+                    destination.parentVC = self
                     destination.collectionUID = collectionUID
                 }
             }

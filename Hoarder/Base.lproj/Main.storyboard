@@ -13,6 +13,7 @@
         <!--Navigation Controller-->
         <scene sceneID="omY-R2-5Pl">
             <objects>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="GLf-9g-Isy" userLabel="First Responder" sceneMemberID="firstResponder"/>
                 <navigationController id="xBa-mQ-DiK" customClass="NavigationController" customModule="Hoarder" customModuleProvider="target" sceneMemberID="viewController">
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="DnK-j1-jjI">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
@@ -22,9 +23,8 @@
                         <segue destination="BYZ-38-t0r" kind="relationship" relationship="rootViewController" id="wLb-B5-GRX"/>
                     </connections>
                 </navigationController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="GLf-9g-Isy" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-2222" y="-71"/>
+            <point key="canvasLocation" x="-1482" y="-93"/>
         </scene>
         <!--LoginVC-->
         <scene sceneID="tne-QT-ifu">
@@ -354,6 +354,11 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="My Hoards" id="Pbm-Zh-uD7">
+                        <barButtonItem key="leftBarButtonItem" title="Sign Out" id="lAQ-OH-YcV">
+                            <connections>
+                                <action selector="signOutPressed:" destination="eld-fu-arW" id="NVr-8S-hn3"/>
+                            </connections>
+                        </barButtonItem>
                         <barButtonItem key="rightBarButtonItem" systemItem="add" id="Veb-HS-s0v">
                             <connections>
                                 <action selector="addCollectionPressed:" destination="eld-fu-arW" id="H5M-Lj-Kyh"/>
@@ -584,24 +589,6 @@
                                     <action selector="saveButtonPressed:" destination="9bF-OG-dsW" eventType="touchUpInside" id="Mdu-II-Mtg"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="OtN-YQ-QFf">
-                                <rect key="frame" x="16" y="607" width="343" height="40"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="40" id="6Gh-c8-tlX"/>
-                                </constraints>
-                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="24"/>
-                                <state key="normal" title="Cancel">
-                                    <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
-                                </state>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="styleButton" value="YES"/>
-                                </userDefinedRuntimeAttributes>
-                                <connections>
-                                    <action selector="cancelButtonPressed:" destination="9bF-OG-dsW" eventType="touchUpInside" id="6Zf-iH-z3r"/>
-                                    <action selector="createCollectionPressed:" destination="1qB-6Z-Om6" eventType="touchUpInside" id="IPe-nN-et9"/>
-                                    <action selector="saveButtonPressed:" destination="RV3-Bb-hMb" eventType="touchUpInside" id="ehN-z9-geW"/>
-                                </connections>
-                            </button>
                         </subviews>
                         <color key="backgroundColor" red="0.0" green="0.94509803921568625" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
@@ -615,9 +602,6 @@
                             <constraint firstItem="eZg-n3-emt" firstAttribute="top" secondItem="wk0-1d-QwT" secondAttribute="bottom" constant="8" id="MSG-n0-vWA"/>
                             <constraint firstItem="oPv-bw-lxE" firstAttribute="top" secondItem="ykT-dk-5bH" secondAttribute="bottom" constant="15" id="O1H-3a-Lac"/>
                             <constraint firstItem="wk0-1d-QwT" firstAttribute="leading" secondItem="eDN-5s-LAB" secondAttribute="leadingMargin" id="RLb-R3-flv"/>
-                            <constraint firstItem="OtN-YQ-QFf" firstAttribute="trailing" secondItem="eDN-5s-LAB" secondAttribute="trailingMargin" id="Rja-Ng-eCT"/>
-                            <constraint firstItem="OtN-YQ-QFf" firstAttribute="leading" secondItem="eDN-5s-LAB" secondAttribute="leadingMargin" id="SOl-FC-hQJ"/>
-                            <constraint firstItem="rxl-H4-Ab9" firstAttribute="top" secondItem="OtN-YQ-QFf" secondAttribute="bottom" constant="20" id="WTu-IR-dRZ"/>
                             <constraint firstItem="eZg-n3-emt" firstAttribute="trailing" secondItem="eDN-5s-LAB" secondAttribute="trailingMargin" id="XRd-Am-ikQ"/>
                             <constraint firstItem="eZg-n3-emt" firstAttribute="leading" secondItem="eDN-5s-LAB" secondAttribute="leadingMargin" id="bWi-bh-bmL"/>
                             <constraint firstItem="BWY-Jj-hZQ" firstAttribute="width" secondItem="ykT-dk-5bH" secondAttribute="width" id="dFg-OW-S2Y"/>
@@ -629,7 +613,13 @@
                             <constraint firstItem="o8z-Aj-5VC" firstAttribute="trailing" secondItem="eDN-5s-LAB" secondAttribute="trailingMargin" id="z7t-16-gMc"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="Add/Edit Item" id="bee-Fz-w7l"/>
+                    <navigationItem key="navigationItem" title="Add/Edit Item" id="bee-Fz-w7l">
+                        <barButtonItem key="leftBarButtonItem" title="Cancel" id="YO4-fj-fq6">
+                            <connections>
+                                <action selector="cancelButtonPressed:" destination="9bF-OG-dsW" id="a3r-1M-qIZ"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
                         <outlet property="descriptionText" destination="wk0-1d-QwT" id="kg0-xJ-inh"/>
                         <outlet property="itemImage" destination="ykT-dk-5bH" id="srj-fT-GqN"/>
@@ -710,23 +700,6 @@
                                     <action selector="saveButtonPressed:" destination="RV3-Bb-hMb" eventType="touchUpInside" id="jLI-Zn-jaj"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qnd-hY-IP5">
-                                <rect key="frame" x="16" y="607" width="343" height="40"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="40" id="wU6-c0-Ibr"/>
-                                </constraints>
-                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="24"/>
-                                <state key="normal" title="Cancel">
-                                    <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
-                                </state>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="styleButton" value="YES"/>
-                                </userDefinedRuntimeAttributes>
-                                <connections>
-                                    <action selector="cancelButtonPressed:" destination="RV3-Bb-hMb" eventType="touchUpInside" id="V6J-X0-TpS"/>
-                                    <action selector="cancelPressed:" destination="1qB-6Z-Om6" eventType="touchUpInside" id="1Oy-Dj-Ux0"/>
-                                </connections>
-                            </button>
                             <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Name of Collection" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="GG4-yN-yuP">
                                 <rect key="frame" x="61" y="79" width="298" height="30"/>
                                 <constraints>
@@ -751,7 +724,6 @@
                         <color key="backgroundColor" red="0.0" green="0.94509803921568625" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="qwn-lq-hjn" firstAttribute="top" secondItem="bok-Ak-yvk" secondAttribute="bottom" constant="15" id="24q-C9-CuR"/>
-                            <constraint firstItem="NMq-D4-RjQ" firstAttribute="top" secondItem="qnd-hY-IP5" secondAttribute="bottom" constant="20" id="5oE-GQ-v3r"/>
                             <constraint firstItem="GG4-yN-yuP" firstAttribute="leading" secondItem="qwn-lq-hjn" secondAttribute="trailing" constant="15" id="8S0-QI-jwz"/>
                             <constraint firstItem="HNj-tc-xg1" firstAttribute="top" secondItem="bJm-Mc-h0e" secondAttribute="bottom" constant="8" id="Apf-Ci-v6i"/>
                             <constraint firstItem="bJm-Mc-h0e" firstAttribute="top" secondItem="F2F-ar-d72" secondAttribute="bottom" constant="8" id="DdK-0j-9Xz"/>
@@ -759,7 +731,6 @@
                             <constraint firstItem="gYn-LK-kus" firstAttribute="top" secondItem="GG4-yN-yuP" secondAttribute="bottom" constant="8" id="KN3-s6-BvL"/>
                             <constraint firstItem="8dJ-Kl-wo6" firstAttribute="trailing" secondItem="Hds-BF-SBP" secondAttribute="trailingMargin" id="MNP-VZ-29y"/>
                             <constraint firstItem="8dJ-Kl-wo6" firstAttribute="leading" secondItem="Hds-BF-SBP" secondAttribute="leadingMargin" id="RyB-WV-MiV"/>
-                            <constraint firstItem="qnd-hY-IP5" firstAttribute="leading" secondItem="Hds-BF-SBP" secondAttribute="leadingMargin" id="SLg-3H-P4g"/>
                             <constraint firstItem="F2F-ar-d72" firstAttribute="trailing" secondItem="Hds-BF-SBP" secondAttribute="trailingMargin" id="SVf-gC-e7I"/>
                             <constraint firstItem="gYn-LK-kus" firstAttribute="leading" secondItem="Hds-BF-SBP" secondAttribute="leadingMargin" id="XVa-vg-DDR"/>
                             <constraint firstItem="HNj-tc-xg1" firstAttribute="leading" secondItem="Hds-BF-SBP" secondAttribute="leadingMargin" id="YW0-fh-Mjh"/>
@@ -770,12 +741,16 @@
                             <constraint firstItem="gYn-LK-kus" firstAttribute="trailing" secondItem="Hds-BF-SBP" secondAttribute="trailingMargin" id="jLU-XY-oYI"/>
                             <constraint firstItem="bJm-Mc-h0e" firstAttribute="leading" secondItem="Hds-BF-SBP" secondAttribute="leadingMargin" id="jk3-uN-HeV"/>
                             <constraint firstItem="F2F-ar-d72" firstAttribute="leading" secondItem="Hds-BF-SBP" secondAttribute="leadingMargin" id="jw2-vc-Ma6"/>
-                            <constraint firstItem="qnd-hY-IP5" firstAttribute="trailing" secondItem="Hds-BF-SBP" secondAttribute="trailingMargin" id="vNu-9A-2Ie"/>
                             <constraint firstItem="GG4-yN-yuP" firstAttribute="top" secondItem="bok-Ak-yvk" secondAttribute="bottom" constant="15" id="vs0-rp-kQb"/>
                             <constraint firstItem="qwn-lq-hjn" firstAttribute="leading" secondItem="Hds-BF-SBP" secondAttribute="leadingMargin" id="wAM-IZ-XpG"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="Edit Hoard" id="ASk-F6-heQ">
+                        <barButtonItem key="leftBarButtonItem" title="Cancel" id="VE9-d9-XkD">
+                            <connections>
+                                <action selector="cancelButtonPressed:" destination="RV3-Bb-hMb" id="Ze7-xJ-AU0"/>
+                            </connections>
+                        </barButtonItem>
                         <barButtonItem key="rightBarButtonItem" style="plain" systemItem="trash" id="pFG-uj-Cop">
                             <connections>
                                 <action selector="trashButtonPressed:" destination="RV3-Bb-hMb" id="fOF-8X-iGM"/>
@@ -871,22 +846,6 @@
                                     <action selector="createCollectionPressed:" destination="1qB-6Z-Om6" eventType="touchUpInside" id="Xhs-zs-S1q"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fXE-Ks-jKE">
-                                <rect key="frame" x="16" y="607" width="343" height="40"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="40" id="MG5-XB-7Fp"/>
-                                </constraints>
-                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="24"/>
-                                <state key="normal" title="Cancel">
-                                    <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
-                                </state>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="styleButton" value="YES"/>
-                                </userDefinedRuntimeAttributes>
-                                <connections>
-                                    <action selector="cancelPressed:" destination="1qB-6Z-Om6" eventType="touchUpInside" id="t9U-Qe-aJ2"/>
-                                </connections>
-                            </button>
                         </subviews>
                         <color key="backgroundColor" red="0.0" green="0.94509803921568625" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                         <constraints>
@@ -895,11 +854,8 @@
                             <constraint firstItem="skj-vN-F4w" firstAttribute="trailing" secondItem="F8Y-EA-vj9" secondAttribute="trailingMargin" id="7s1-ge-mXS"/>
                             <constraint firstItem="0q3-3A-TFc" firstAttribute="top" secondItem="smr-6W-bzq" secondAttribute="bottom" constant="8" id="91X-Se-gT1"/>
                             <constraint firstItem="smr-6W-bzq" firstAttribute="leading" secondItem="ps7-f5-kou" secondAttribute="leading" id="OTx-Mn-Psx"/>
-                            <constraint firstItem="fXE-Ks-jKE" firstAttribute="leading" secondItem="F8Y-EA-vj9" secondAttribute="leadingMargin" id="RKK-Id-0Ow"/>
                             <constraint firstItem="0q3-3A-TFc" firstAttribute="leading" secondItem="F8Y-EA-vj9" secondAttribute="leadingMargin" id="VnJ-CL-XnY"/>
-                            <constraint firstItem="Hpa-TR-tNv" firstAttribute="top" secondItem="fXE-Ks-jKE" secondAttribute="bottom" constant="20" id="WBx-mZ-pk0"/>
                             <constraint firstItem="smr-6W-bzq" firstAttribute="top" secondItem="ps7-f5-kou" secondAttribute="bottom" constant="8" symbolic="YES" id="aaF-yY-6i0"/>
-                            <constraint firstItem="fXE-Ks-jKE" firstAttribute="trailing" secondItem="F8Y-EA-vj9" secondAttribute="trailingMargin" id="cP7-CR-Y5O"/>
                             <constraint firstItem="skj-vN-F4w" firstAttribute="leading" secondItem="F8Y-EA-vj9" secondAttribute="leadingMargin" id="d9K-g3-t4w"/>
                             <constraint firstItem="skj-vN-F4w" firstAttribute="top" secondItem="nT6-Y2-fB5" secondAttribute="bottom" constant="15" id="eSw-xD-ChU"/>
                             <constraint firstItem="EYD-YO-w5E" firstAttribute="leading" secondItem="F8Y-EA-vj9" secondAttribute="leadingMargin" id="eiQ-FH-COT"/>
@@ -913,7 +869,13 @@
                             <constraint firstItem="ps7-f5-kou" firstAttribute="leading" secondItem="F8Y-EA-vj9" secondAttribute="leadingMargin" id="xSe-WM-KhB"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="New Hoard" id="AIz-KT-ZwX"/>
+                    <navigationItem key="navigationItem" title="New Hoard" id="AIz-KT-ZwX">
+                        <barButtonItem key="leftBarButtonItem" title="Cancel" id="56k-pm-Mzz">
+                            <connections>
+                                <action selector="cancelPressed:" destination="1qB-6Z-Om6" id="AsI-ay-0nf"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
                         <outlet property="categoryPicker" destination="N0q-3y-gAr" id="zdm-AM-aVN"/>
                         <outlet property="collectionNameText" destination="skj-vN-F4w" id="2co-BA-Twi"/>

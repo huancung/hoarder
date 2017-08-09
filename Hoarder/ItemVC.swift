@@ -19,11 +19,13 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
     var isImageSet = false
     var imagePicker: UIImagePickerController!
     var collectionUID: String!
+    var parentVC: ParentViewController?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         imagePicker = UIImagePickerController()
         imagePicker.delegate = self
+        navigationItem.setHidesBackButton(true, animated: true)
         
         if collectionUID != nil {
             print(collectionUID)
@@ -69,7 +71,7 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
     }
 
     @IBAction func cancelButtonPressed(_ sender: Any) {
-        //dismiss(animated: true, completion: nil)
+        parentVC?.willReloadData = false
         self.navigationController?.popViewController(animated: true)
     }
     
@@ -106,9 +108,6 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
             } else {
                 saveItemInfo(itemName: name, description: description, imageID: "", imageURL: "")
             }
-            
-            //dismiss(animated: true, completion: nil)
-            self.navigationController?.popViewController(animated: true)
         } else {
             AlertUtil.alert(message: "Please add an item name!", targetViewController: self)
         }
@@ -176,5 +175,7 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
             
             refCollectionInfo.child(key).setValue(newItem)
         }
+        self.parentVC?.willReloadData = true
+        self.navigationController?.popViewController(animated: true)
     }
 }

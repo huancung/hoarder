@@ -15,6 +15,8 @@ class EditCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewData
     @IBOutlet weak var categoryPicker: UIPickerView!
     @IBOutlet weak var descriptionText: UITextView!
     @IBOutlet weak var favoriteButton: UIButton!
+    
+    var parentVC: ParentViewController?
     var collectionObj: CollectionType!
     var unselectedAlpha = 0.65
     var selectedAlpha = 1.0
@@ -28,6 +30,7 @@ class EditCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewData
         super.viewDidLoad()
         categoryPicker.delegate = self
         sortedCollectionCategories = collectionCategories.sorted()
+        navigationItem.setHidesBackButton(true, animated: true)
         
         if collectionObj != nil {
             loadData()
@@ -35,7 +38,6 @@ class EditCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewData
     }
     
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        
         return sortedCollectionCategories[row].capitalized
     }
     
@@ -114,7 +116,6 @@ class EditCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewData
             }
             
             let category = sortedCollectionCategories[categoryPicker.selectedRow(inComponent: 0)]
-            
             saveCollectionInfo(collectionName: collectionName, category: category, description: description)
         } else {
             AlertUtil.alert(message: "Please add a collection name!", targetViewController: self)
@@ -122,7 +123,7 @@ class EditCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewData
     }
     
     @IBAction func cancelButtonPressed(_ sender: Any) {
-        //dismiss(animated: true, completion: nil)
+        parentVC?.willReloadData = false
         self.navigationController?.popViewController(animated: true)
     }
     
@@ -162,7 +163,7 @@ class EditCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewData
             refCollectionInfo.child(uid).child(collectionID).setValue(newCollection)
         }
         
-        //dismiss(animated: true, completion: nil)
+        parentVC?.willReloadData = true
         self.navigationController?.popViewController(animated: true)
     }
     
@@ -173,7 +174,8 @@ class EditCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewData
             let collectionID = collectionObj.collectionID
             refCollectionInfo.child(uid).child(collectionID).setValue(nil)
         }
-        //dismiss(animated: true, completion: nil)
+        
+        parentVC?.willReloadData = true
         self.navigationController?.popViewController(animated: true)
     }
 }

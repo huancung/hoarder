@@ -6,7 +6,7 @@
 //  Copyright © 2017 Huan Cung. All rights reserved.
 //
 
-import Foundation
+import UIKit
 
 public class ItemType {
     private var _ownerID = ""
@@ -18,6 +18,7 @@ public class ItemType {
     private var _imageURL = ""
     private var _dateAdded = 0.0
     private var _dateAddedString = ""
+    private var _itemImage: UIImage?
     
     init(ownerID: String, collectionID: String, itemID: String, itemName: String, description: String, imageID: String, imageURL: String, dateAdded: Double, dateAddedString: String) {
         _ownerID = ownerID
@@ -82,6 +83,16 @@ public class ItemType {
     var dateAddedString: String {
         get{
             return _dateAddedString
+        }
+    }
+    
+    var itemImage: UIImage? {
+        get{
+            return _itemImage
+        }
+        
+        set{
+            _itemImage = newValue
         }
     }
 }

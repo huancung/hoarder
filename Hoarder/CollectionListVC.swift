@@ -10,12 +10,13 @@ import UIKit
 import FirebaseDatabase
 import FirebaseAuth
 
-class CollectionListVC: UIViewController, UITableViewDelegate,UITableViewDataSource {
+class CollectionListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, ParentViewController {
     @IBOutlet weak var collectionTableView: UITableView!
     @IBOutlet weak var sortSegController: UISegmentedControl!
     
     var blurEffectView: UIVisualEffectView?
     var collectionList = [CollectionType]()
+    var willReloadData: Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -24,24 +25,18 @@ class CollectionListVC: UIViewController, UITableViewDelegate,UITableViewDataSou
         collectionTableView.delegate = self
         collectionTableView.dataSource = self
         collectionTableView.backgroundColor = UIColor.clear
-        let button = UIBarButtonItem(title: "Log Out", style: .plain, target: self, action: #selector(logout(sender:)))
-        navigationItem.leftBarButtonItem = button
         populateCollectionData()
     }
     
-    func logout(sender: UIBarButtonItem) {
-        do {
-            print("Signing out c")
-            try Auth.auth().signOut()
-            self.navigationController?.popViewController(animated: true)
-        } catch let error as NSError {
-            print(error.localizedDescription)
-        }
-        
+    @IBAction func signOutPressed(_ sender: Any) {
+        self.navigationController?.popViewController(animated: true)
     }
 
     override func viewDidAppear(_ animated: Bool) {
-        populateCollectionData()
+        if willReloadData {
+            willReloadData = false
+            populateCollectionData()
+        }
     }
     
     @IBAction func segControlValueChanged(_ sender: Any) {
@@ -76,12 +71,7 @@ class CollectionListVC: UIViewController, UITableViewDelegate,UITableViewDataSou
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-//        if let obj = controller.fetchedObjects, obj.count > 0 {
-//            let item = obj[indexPath.row]
-//            
-//            performSegue(withIdentifier: "ItemDetailsSegue", sender: item)
-//            
-//        }
+        collectionTableView.deselectRow(at: indexPath, animated: true)
         performSegue(withIdentifier: "ItemListSegue", sender: collectionList[indexPath.row].collectionID)
     }
     
@@ -147,12 +137,18 @@ class CollectionListVC: UIViewController, UITableViewDelegate,UITableViewDataSou
         if segue.identifier == "editCollectionSegue" {
             if let destination = segue.destination as? EditCollectionVC {
                 if let collectionobj = sender as? CollectionType {
+                    destination.parentVC = self
                     destination.collectionObj = collectionobj
                 }
+            }
+        } else if segue.identifier == "NewCollectionSegue" {
+            if let destination = segue.destination as? NewCollectionVC {
+                destination.parentVC = self
             }
         } else if segue.identifier == "ItemListSegue" {
             if let destination = segue.destination as? ItemListVC {
                 if let collectionUID = sender as? String {
+                    destination.parentVC = self
                     destination.collectionUID = collectionUID
                 }
             }
