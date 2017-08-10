@@ -9,6 +9,7 @@
 import UIKit
 import FirebaseDatabase
 import FirebaseAuth
+import FirebaseStorage
 
 class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, ParentViewController {
     @IBOutlet weak var itemTableView: UITableView!
@@ -60,7 +61,7 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
         let delete = UITableViewRowAction(style: .destructive, title: "Delete") { (action, indexPath) in
             print("delete \(indexPath.row)")
-            self.itemList.remove(at: indexPath.row)
+            self.deleteItem(itemIndex: indexPath.row)
             self.itemTableView.deleteRows(at: [indexPath], with: .fade)
         }
         
@@ -99,6 +100,26 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                 self.itemTableView.reloadData()
             }
         })
+    }
+    
+    private func deleteItem(itemIndex: Int) {
+        let item = itemList[itemIndex]
+        let refItems = Database.database().reference().child("items").child(item.collectionID).child(item.itemID)
+        
+        // Delete item in database
+        refItems.setValue(nil)
+        
+        // Delete saved image
+        if !item.imageID.isEmpty {
+            let storageRef = Storage.storage().reference().child("ItemImages").child(item.collectionID).child("\(item.imageID).png")
+            storageRef.delete { (error) in
+                if let error = error {
+                    print(error.localizedDescription)
+                }
+            }
+        }
+        
+        self.itemList.remove(at: itemIndex)
     }
     
     @IBAction func addEditItemPressed(_ sender: Any) {

@@ -9,6 +9,7 @@
 import UIKit
 import FirebaseDatabase
 import FirebaseAuth
+import FirebaseStorage
 
 class EditCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource{
     @IBOutlet weak var collectionNameText: UITextField!
@@ -169,13 +170,38 @@ class EditCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewData
     
     private func deleteCollection() {
         let refCollectionInfo = Database.database().reference().child("collections")
+        let collectionID = collectionObj.collectionID
         
         if let uid = Auth.auth().currentUser?.uid {
-            let collectionID = collectionObj.collectionID
             refCollectionInfo.child(uid).child(collectionID).setValue(nil)
         }
-        
+        deleteItem(collectionID: collectionID)
         parentVC?.willReloadData = true
         self.navigationController?.popViewController(animated: true)
+    }
+    
+    private func deleteItem(collectionID: String) {
+        let refItems = Database.database().reference().child("items").child(collectionID)
+        
+        // Getting list of imageIDs
+        refItems.observeSingleEvent(of: DataEventType.value, with: { (snapshot) in
+            if let itemSets = snapshot.value as? NSDictionary {
+                for (_, item) in itemSets {
+                    let itemDict = item as! NSDictionary
+                    let imageID = itemDict["imageID"] as! String
+                    
+                    // Delete saved image
+                    let storageRef = Storage.storage().reference().child("ItemImages").child(collectionID).child("\(imageID).png")
+                    storageRef.delete { (error) in
+                        if let error = error {
+                            print(error.localizedDescription)
+                        }
+                    }
+                }
+            }
+            
+            // Delete item in database
+            refItems.setValue(nil)
+        })
     }
 }

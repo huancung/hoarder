@@ -26,7 +26,7 @@ public class ItemType {
         _itemID = itemID
         _itemName = itemName
         _description = description
-        _imageID = itemID
+        _imageID = imageID
         _imageURL = imageURL
         _dateAdded = dateAdded
         _dateAddedString = dateAddedString

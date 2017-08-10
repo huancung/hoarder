@@ -116,7 +116,7 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
     private func saveItemWithImage(itemName: String, description: String) {
         let imageKey = NSUUID().uuidString
         if let image = itemImage.image {
-            let storageRef = Storage.storage().reference().child("ItemImages").child("\(imageKey).png")
+            let storageRef = Storage.storage().reference().child("ItemImages").child(collectionUID).child("\(imageKey).png")
             
             // Half the image size
             let targetSize = CGSize(width: image.size.width/6, height: image.size.height/6)
