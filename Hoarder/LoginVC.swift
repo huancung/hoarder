@@ -63,12 +63,12 @@ class LoginVC: UIViewController {
             }
             
             if !errors {
-                startBusyModal()
+                BusyModal.startBusyModal(targetViewController: self)
                 Auth.auth().signIn(withEmail: email, password: password, completion: { (returnUser, returnError) in
                     if let user = returnUser {
                         print(user.uid)
                         print(user.email!)
-                        self.stopBusyModal()
+                        BusyModal.stopBusyModal()
                         
                         if self.rememberMeSwitch.isOn {
                             self.storeLogin(email: email, password: password)
@@ -84,7 +84,7 @@ class LoginVC: UIViewController {
                         
                     } else if let error = returnError {
                         AlertUtil.alert(message: error.localizedDescription, targetViewController: self)
-                        self.stopBusyModal()
+                        BusyModal.stopBusyModal()
                     }
                     
                 })
@@ -143,36 +143,7 @@ class LoginVC: UIViewController {
         
         rememberMeSwitch.isOn = defaults.bool(forKey: "remember")
     }
-    
-    /**
-     Removes a busy modal from the view if there is one being displayed.
-     */
-    private func stopBusyModal() {
-        if blurEffectView != nil {
-            blurEffectView?.removeFromSuperview()
-        }
-    }
-    
-    /**
-     Adds a busy modal overlay that blocks out controls while app is busy.
-     */
-    private func startBusyModal() {
-        if let modal = blurEffectView {
-            
-            modal.frame = view.bounds
-            modal.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-            
-            let actInd: UIActivityIndicatorView = UIActivityIndicatorView()
-            actInd.center = modal.center
-            actInd.hidesWhenStopped = true
-            actInd.activityIndicatorViewStyle = .whiteLarge
-            modal.addSubview(actInd)
-            actInd.startAnimating()
-            
-            view.addSubview(modal)
-        }
-    }
-    
+ 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         self.view.endEditing(true)
     }

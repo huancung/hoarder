@@ -10,6 +10,7 @@
 		484FB5F71F34337400B0C5BE /* ItemType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 484FB5F61F34337400B0C5BE /* ItemType.swift */; };
 		484FB5F91F37B8EB00B0C5BE /* NavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 484FB5F81F37B8EB00B0C5BE /* NavigationController.swift */; };
 		484FB62B1F3ABC2900B0C5BE /* ParentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 484FB62A1F3ABC2900B0C5BE /* ParentViewController.swift */; };
+		484FB62D1F3D624400B0C5BE /* BusyModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 484FB62C1F3D624400B0C5BE /* BusyModal.swift */; };
 		485412CD1F3029B500AB206B /* ItemVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 485412CC1F3029B500AB206B /* ItemVC.swift */; };
 		4875495E1F1EFDCA00CDFE08 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4875495D1F1EFDCA00CDFE08 /* AppDelegate.swift */; };
 		487549601F1EFDCA00CDFE08 /* LoginVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4875495F1F1EFDCA00CDFE08 /* LoginVC.swift */; };
@@ -48,6 +49,7 @@
 		484FB5F61F34337400B0C5BE /* ItemType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ItemType.swift; sourceTree = "<group>"; };
 		484FB5F81F37B8EB00B0C5BE /* NavigationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NavigationController.swift; sourceTree = "<group>"; };
 		484FB62A1F3ABC2900B0C5BE /* ParentViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ParentViewController.swift; sourceTree = "<group>"; };
+		484FB62C1F3D624400B0C5BE /* BusyModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BusyModal.swift; sourceTree = "<group>"; };
 		485412CC1F3029B500AB206B /* ItemVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ItemVC.swift; sourceTree = "<group>"; };
 		4875495A1F1EFDCA00CDFE08 /* Hoarder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Hoarder.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4875495D1F1EFDCA00CDFE08 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -153,6 +155,7 @@
 		487549801F1EFF9100CDFE08 /* View */ = {
 			isa = PBXGroup;
 			children = (
+				484FB62C1F3D624400B0C5BE /* BusyModal.swift */,
 				487549881F1F136600CDFE08 /* StyleButton.swift */,
 				48E37BD71F230E2E0085E327 /* StyleTextView.swift */,
 				48E37BE11F253D0B0085E327 /* CollectionCell.swift */,
@@ -389,6 +392,7 @@
 				48E37BD81F230E2E0085E327 /* StyleTextView.swift in Sources */,
 				48E37BF01F2AF92B0085E327 /* ItemCell.swift in Sources */,
 				485412CD1F3029B500AB206B /* ItemVC.swift in Sources */,
+				484FB62D1F3D624400B0C5BE /* BusyModal.swift in Sources */,
 				484FB5F71F34337400B0C5BE /* ItemType.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

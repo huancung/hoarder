@@ -155,7 +155,7 @@ class EditCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewData
      */
     private func saveCollectionInfo(collectionName: String, category: String, description: String) {
         let refCollectionInfo = Database.database().reference().child("collections")
-
+        BusyModal.startBusyModalAndHideNav(targetViewController: self)
         if let uid = Auth.auth().currentUser?.uid {
             let collectionID = collectionObj.collectionID
             let creationDate =  collectionObj.dateCreated
@@ -163,7 +163,7 @@ class EditCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewData
             
             refCollectionInfo.child(uid).child(collectionID).setValue(newCollection)
         }
-        
+        BusyModal.stopBusyModalAndShowNav(targetViewController: self)
         parentVC?.willReloadData = true
         self.navigationController?.popViewController(animated: true)
     }
@@ -182,7 +182,7 @@ class EditCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewData
     
     private func deleteItem(collectionID: String) {
         let refItems = Database.database().reference().child("items").child(collectionID)
-        
+        BusyModal.startBusyModalAndHideNav(targetViewController: self)
         // Getting list of imageIDs
         refItems.observeSingleEvent(of: DataEventType.value, with: { (snapshot) in
             if let itemSets = snapshot.value as? NSDictionary {
@@ -202,6 +202,7 @@ class EditCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewData
             
             // Delete item in database
             refItems.setValue(nil)
+            BusyModal.stopBusyModalAndShowNav(targetViewController: self)
         })
     }
 }

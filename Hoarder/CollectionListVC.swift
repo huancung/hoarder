@@ -13,15 +13,12 @@ import FirebaseAuth
 class CollectionListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, ParentViewController {
     @IBOutlet weak var collectionTableView: UITableView!
     @IBOutlet weak var sortSegController: UISegmentedControl!
-    
-    var blurEffectView: UIVisualEffectView?
+
     var collectionList = [CollectionType]()
     var willReloadData: Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        let blurEffect = UIBlurEffect(style: UIBlurEffectStyle.regular)
-        blurEffectView = UIVisualEffectView(effect: blurEffect)
         collectionTableView.delegate = self
         collectionTableView.dataSource = self
         collectionTableView.backgroundColor = UIColor.clear
@@ -78,7 +75,7 @@ class CollectionListVC: UIViewController, UITableViewDelegate, UITableViewDataSo
     private func populateCollectionData() {
         let uid = Auth.auth().currentUser?.uid
         let collectionRef = Database.database().reference().child("collections").child(uid!)
-        startBusyModal()
+        BusyModal.startBusyModal(targetViewController: self)
         collectionRef.observeSingleEvent(of: DataEventType.value, with: { (snapshot) in
             if let collectionSet = snapshot.value as? NSDictionary {
                 self.collectionList.removeAll()
@@ -101,7 +98,7 @@ class CollectionListVC: UIViewController, UITableViewDelegate, UITableViewDataSo
                 
                 
                 self.setSortOrder(sortBy: self.sortSegController.selectedSegmentIndex)
-                self.stopBusyModal()
+                BusyModal.stopBusyModal()
                 self.collectionTableView.reloadData()
             }
         })
@@ -154,34 +151,4 @@ class CollectionListVC: UIViewController, UITableViewDelegate, UITableViewDataSo
             }
         }
     }
-    
-    /**
-     Removes a busy modal from the view if there is one being displayed.
-     */
-    private func stopBusyModal() {
-        if blurEffectView != nil {
-            blurEffectView?.removeFromSuperview()
-        }
-    }
-    
-    /**
-     Adds a busy modal overlay that blocks out controls while app is busy.
-     */
-    private func startBusyModal() {
-        if let modal = blurEffectView {
-            
-            modal.frame = view.bounds
-            modal.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-            
-            let actInd: UIActivityIndicatorView = UIActivityIndicatorView()
-            actInd.center = modal.center
-            actInd.hidesWhenStopped = true
-            actInd.activityIndicatorViewStyle = .whiteLarge
-            modal.addSubview(actInd)
-            actInd.startAnimating()
-            
-            view.addSubview(modal)
-        }
-    }
-
 }

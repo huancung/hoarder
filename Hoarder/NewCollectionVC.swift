@@ -105,8 +105,6 @@ class NewCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataS
     private func saveCollectionInfo(collectionName: String, category: String, description: String) {
         let refCollectionInfo = Database.database().reference().child("collections")
         
-        
-        
         if let uid = Auth.auth().currentUser?.uid {
             let key = refCollectionInfo.child("collections").childByAutoId().key
             let newCollection = ["ownerUid" : uid, "name": collectionName, "category": category ,"description": description, "collectionID": key, "itemCount": 0, "creationDate": DateTimeUtilities.getTimestamp(), "isFavorite": "false"] as [String : Any]
@@ -114,6 +112,5 @@ class NewCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataS
             refCollectionInfo.child(uid).child(key).setValue(newCollection)
         }
     }
-    
     
 }

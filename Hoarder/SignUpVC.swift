@@ -61,7 +61,7 @@ class SignUpVC: UIViewController {
         } else {
             //Create account
             self.view.endEditing(true)
-            startBusyModal()
+            BusyModal.startBusyModalAndHideNav(targetViewController: self)
             
             Auth.auth().createUser(withEmail: emailText.text!, password: passwordText.text!, completion: { (returnUser, returnError) in
                 if let user = returnUser {
@@ -82,11 +82,11 @@ class SignUpVC: UIViewController {
                     self.savePersonalInfo(uid: user.uid, firstName: firstName, lastName: lastName, email: user.email!)
                     user.sendEmailVerification(completion: nil)
                     
-                    self.stopBusyModal()
+                    BusyModal.stopBusyModalAndShowNav(targetViewController: self)
                     
                     AlertUtil.message(title: "Hooray!", message: "You're account has been created! Please verify your email. Happy hoarding!", targetViewController: self)
                 } else if let error = returnError {
-                    self.stopBusyModal()
+                    BusyModal.stopBusyModal()
                     AlertUtil.alert(message: error.localizedDescription, targetViewController: self)
                 }
             })
@@ -95,10 +95,11 @@ class SignUpVC: UIViewController {
     
     /**
      Save user's personal information.
-     - parameters
+     - parameters:
         - uid: Unique ID provided by the user account
         - firstName: User's first name
         - lastName: User's last name
+        - email: User's email
     */
     private func savePersonalInfo(uid: String, firstName: String, lastName: String, email: String) {
         let refPersonalInfo = Database.database().reference().child("personalInfo")
@@ -106,35 +107,6 @@ class SignUpVC: UIViewController {
         let newUser = ["uid" : uid, "firstName": firstName, "lastName": lastName, "email": email]
         
         refPersonalInfo.child(uid).setValue(newUser)
-    }
-    
-    /**
-     Removes a busy modal from the view if there is one being displayed.
-    */
-    private func stopBusyModal() {
-        if blurEffectView != nil {
-            blurEffectView?.removeFromSuperview()
-        }
-    }
-    
-    /**
-     Adds a busy modal overlay that blocks out controls while app is busy.
-    */
-    private func startBusyModal() {
-        if let modal = blurEffectView {
-
-            modal.frame = view.bounds
-            modal.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        
-            let actInd: UIActivityIndicatorView = UIActivityIndicatorView()
-            actInd.center = modal.center
-            actInd.hidesWhenStopped = true
-            actInd.activityIndicatorViewStyle = .whiteLarge
-            modal.addSubview(actInd)
-            actInd.startAnimating()
-        
-            view.addSubview(modal)
-        }
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {

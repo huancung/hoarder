@@ -103,6 +103,7 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
                 description = desc
             }
             
+            BusyModal.startBusyModalAndHideNav(targetViewController: self)
             if isImageSet {
                 saveItemWithImage(itemName: name, description: description)
             } else {
@@ -175,6 +176,7 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
             
             refCollectionInfo.child(key).setValue(newItem)
         }
+        BusyModal.stopBusyModalAndShowNav(targetViewController: self)
         self.parentVC?.willReloadData = true
         self.navigationController?.popViewController(animated: true)
     }

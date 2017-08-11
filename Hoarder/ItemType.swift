@@ -95,4 +95,22 @@ public class ItemType {
             _itemImage = newValue
         }
     }
+    
+    public func downloadImage() {
+        if _itemImage == nil && !_imageURL.isEmpty {
+            let url = URL(string: _imageURL)!
+            
+            DispatchQueue.global().async {
+                do {
+                    let data = try Data(contentsOf: url)
+                    DispatchQueue.main.async {
+                        let image = UIImage(data: data)
+                        self._itemImage = image
+                    }
+                } catch {
+                    print("Unable to get image!")
+                }
+            }
+        }
+    }
 }

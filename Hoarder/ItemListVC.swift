@@ -75,7 +75,7 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     
     private func populateItemCellData() {
         let itemDataRef = Database.database().reference().child("items").child(collectionUID)
-        
+        BusyModal.startBusyModalAndHideNav(targetViewController: self)
         itemDataRef.observeSingleEvent(of: DataEventType.value, with: { (snapshot) in
             if let itemSets = snapshot.value as? NSDictionary {
                 self.itemList.removeAll()
@@ -93,19 +93,19 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                     let dateAddedString = DateTimeUtilities.formatTimeInterval(timeInterval: dateAdded)
                     
                     let item = ItemType(ownerID: ownerID, collectionID: collectionID, itemID: itemID, itemName: name, description: description, imageID: imageID, imageURL: imageURL, dateAdded: dateAdded, dateAddedString: dateAddedString)
-                    
+                    item.downloadImage()
                     self.itemList.append(item)
                 }
-                
                 self.itemTableView.reloadData()
             }
+            BusyModal.stopBusyModalAndShowNav(targetViewController: self)
         })
     }
     
     private func deleteItem(itemIndex: Int) {
         let item = itemList[itemIndex]
         let refItems = Database.database().reference().child("items").child(item.collectionID).child(item.itemID)
-        
+        BusyModal.startBusyModalAndHideNav(targetViewController: self)
         // Delete item in database
         refItems.setValue(nil)
         
@@ -118,7 +118,7 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                 }
             }
         }
-        
+        BusyModal.stopBusyModalAndShowNav(targetViewController: self)
         self.itemList.remove(at: itemIndex)
     }
     
