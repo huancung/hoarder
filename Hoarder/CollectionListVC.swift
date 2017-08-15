@@ -25,6 +25,10 @@ class CollectionListVC: UIViewController, UITableViewDelegate, UITableViewDataSo
         populateCollectionData()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        populateCollectionData()
+    }
+    
     @IBAction func signOutPressed(_ sender: Any) {
         self.navigationController?.popViewController(animated: true)
     }
@@ -95,7 +99,6 @@ class CollectionListVC: UIViewController, UITableViewDelegate, UITableViewDataSo
                     let collectionObj = CollectionType(collectionName: name, category: category, description: description, collectionID: collectionID, itemCount: itemCount, ownerID: ownerID, creationDateString: creationDateString, creationDate: creationDate, isFavorite: isFavorite)
                     self.collectionList.append(collectionObj)
                 }
-                
                 
                 self.setSortOrder(sortBy: self.sortSegController.selectedSegmentIndex)
                 BusyModal.stopBusyModal()

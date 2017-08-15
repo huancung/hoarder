@@ -11,8 +11,9 @@ import FirebaseDatabase
 import FirebaseAuth
 import FirebaseStorage
 
-class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, ParentViewController {
+class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate,ParentViewController {
     @IBOutlet weak var itemTableView: UITableView!
+    @IBOutlet weak var searchBar: UISearchBar!
     
     var collectionUID: String!
     var itemList = [ItemType]()
@@ -21,6 +22,7 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        searchBar.delegate = self
         itemTableView.delegate = self
         itemTableView.dataSource = self
         itemTableView.backgroundColor = UIColor.clear
@@ -40,6 +42,18 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         }
     }
     
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        view.endEditing(true)
+    }
+    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        view.endEditing(true)
+    }
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        view.endEditing(true)
+    }
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if let cell = tableView.dequeueReusableCell(withIdentifier: "itemCell", for: indexPath) as? ItemCell {
             configureCell(cell: cell, indexPath: indexPath)
@@ -54,8 +68,9 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        view.endEditing(true)
         itemTableView.deselectRow(at: indexPath, animated: true)
-        // view item code here
+        performSegue(withIdentifier: "editItemSegue", sender: itemList[indexPath.row])
     }
     
     func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
@@ -96,6 +111,7 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                     item.downloadImage()
                     self.itemList.append(item)
                 }
+                self.updateItemCount()
                 self.itemTableView.reloadData()
             }
             BusyModal.stopBusyModalAndShowNav(targetViewController: self)
@@ -122,17 +138,31 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         self.itemList.remove(at: itemIndex)
     }
     
+    private func updateItemCount() {
+        let refCollectionInfo = Database.database().reference().child("collections")
+        
+        if let uid = Auth.auth().currentUser?.uid {
+            let newCollection = ["itemCount": itemList.count] as [String : Any]
+            
+            refCollectionInfo.child(uid).child(collectionUID).updateChildValues(newCollection)
+        }
+    }
+    
     @IBAction func addEditItemPressed(_ sender: Any) {
-        performSegue(withIdentifier: "addEditItemSegue", sender: collectionUID)
+        performSegue(withIdentifier: "addItemSegue", sender: nil)
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-         if segue.identifier == "addEditItemSegue" {
+        if segue.identifier == "addItemSegue" {
             if let destination = segue.destination as? ItemVC {
-                if let collectionUID = sender as? String {
-                    destination.parentVC = self
-                    destination.collectionUID = collectionUID
-                }
+                destination.parentVC = self
+                destination.collectionUID = collectionUID
+            }
+        } else if segue.identifier == "editItemSegue" {
+            if let destination = segue.destination as? ItemVC {
+                destination.parentVC = self
+                destination.collectionUID = collectionUID
+                destination.loadedItem = sender as? ItemType
             }
         }
     }

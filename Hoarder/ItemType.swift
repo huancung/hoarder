@@ -97,7 +97,7 @@ public class ItemType {
     }
     
     public func downloadImage() {
-        if _itemImage == nil && !_imageURL.isEmpty {
+        if _itemImage != nil && !_imageURL.isEmpty {
             let url = URL(string: _imageURL)!
             
             DispatchQueue.global().async {

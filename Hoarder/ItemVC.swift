@@ -19,18 +19,29 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
     var isImageSet = false
     var imagePicker: UIImagePickerController!
     var collectionUID: String!
+    var loadedItem: ItemType?
     var parentVC: ParentViewController?
+    var editMode: Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
         imagePicker = UIImagePickerController()
         imagePicker.delegate = self
         navigationItem.setHidesBackButton(true, animated: true)
-        
-        if collectionUID != nil {
-            print(collectionUID)
+            
+        // Edit item mode
+        if loadedItem != nil {
+            editMode = true
+            
+            // load image
+            if loadedItem?.itemImage != nil {
+                itemImage.image = loadedItem?.itemImage
+            }
+            
+            // load item info
+            nameText.text = loadedItem?.itemName
+            descriptionText.text = loadedItem?.description
         }
-        // Do any additional setup after loading the view.
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -40,7 +51,6 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
     @IBAction func doneButtonKBDismiss(_ sender: Any) {
         self.view.endEditing(true)
     }
-    
 
     @IBAction func imageButtonPressed(_ sender: Any) {
         let optionMenu = UIAlertController(title: "Add Image", message: nil, preferredStyle: .actionSheet)
@@ -65,6 +75,13 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
         
         optionMenu.addAction(takePhotoAction)
         optionMenu.addAction(chooseFile)
+        if editMode || isImageSet {
+            let viewImage = UIAlertAction(title: "View Image", style: .default) { (alert) in
+                self.performSegue(withIdentifier: "imageZoomSegue", sender: nil)
+            }
+            optionMenu.addAction(viewImage)
+        }
+        
         optionMenu.addAction(cancelAction)
         
         self.present(optionMenu, animated: true, completion: nil)
@@ -107,7 +124,14 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
             if isImageSet {
                 saveItemWithImage(itemName: name, description: description)
             } else {
-                saveItemInfo(itemName: name, description: description, imageID: "", imageURL: "")
+                var imageID = ""
+                var imageURL = ""
+                if editMode {
+                    imageID = (loadedItem?.imageID)!
+                    imageURL = (loadedItem?.imageURL)!
+                }
+                
+                saveItemInfo(itemName: name, description: description, imageID: imageID, imageURL: imageURL)
             }
         } else {
             AlertUtil.alert(message: "Please add an item name!", targetViewController: self)
@@ -136,6 +160,18 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
                 }
                 self.saveItemInfo(itemName: itemName, description: description, imageID: imageKey, imageURL: imageURL)
             })
+            
+            // Delete the old image if one exists
+            if editMode {
+                if let oldImageID = loadedItem?.imageID {
+                    let oldImageRef = Storage.storage().reference().child("ItemImages").child(collectionUID).child("\(oldImageID).png")
+                    oldImageRef.delete { (error) in
+                        if let error = error {
+                            print(error.localizedDescription)
+                        }
+                    }
+                }
+            }
         }
     }
     
@@ -166,12 +202,16 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
     }
     
     private func saveItemInfo(itemName: String, description: String, imageID: String, imageURL: String) {
-        
-        
         if let uid = Auth.auth().currentUser?.uid {
             let refCollectionInfo = Database.database().reference().child("items").child(collectionUID)
+            var key: String!
             
-            let key = refCollectionInfo.childByAutoId().key
+            if editMode {
+                key = loadedItem?.itemID
+            } else {
+                key = refCollectionInfo.childByAutoId().key
+            }
+            
             let newItem = ["ownerID": uid, "collectionID" : collectionUID, "name": itemName ,"description": description, "itemID": key, "imageID": imageID, "imageURL": imageURL, "dateAdded": DateTimeUtilities.getTimestamp()] as [String : Any]
             
             refCollectionInfo.child(key).setValue(newItem)
@@ -179,5 +219,12 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
         BusyModal.stopBusyModalAndShowNav(targetViewController: self)
         self.parentVC?.willReloadData = true
         self.navigationController?.popViewController(animated: true)
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "imageZoomSegue" {
+            let destination = segue.destination as? ImageZoomVC
+            destination?.image = itemImage.image
+        }
     }
 }
