@@ -73,7 +73,7 @@ class CollectionListVC: UIViewController, UITableViewDelegate, UITableViewDataSo
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         collectionTableView.deselectRow(at: indexPath, animated: true)
-        performSegue(withIdentifier: "ItemListSegue", sender: collectionList[indexPath.row].collectionID)
+        performSegue(withIdentifier: "ItemListSegue", sender: collectionList[indexPath.row])
     }
     
     private func populateCollectionData() {
@@ -147,9 +147,10 @@ class CollectionListVC: UIViewController, UITableViewDelegate, UITableViewDataSo
             }
         } else if segue.identifier == "ItemListSegue" {
             if let destination = segue.destination as? ItemListVC {
-                if let collectionUID = sender as? String {
+                if let collection = sender as? CollectionType {
                     destination.parentVC = self
-                    destination.collectionUID = collectionUID
+                    destination.collectionName = collection.collectionName
+                    destination.collectionUID = collection.collectionID
                 }
             }
         }

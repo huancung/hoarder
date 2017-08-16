@@ -14,18 +14,25 @@ import FirebaseStorage
 class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate,ParentViewController {
     @IBOutlet weak var itemTableView: UITableView!
     @IBOutlet weak var searchBar: UISearchBar!
+    @IBOutlet weak var searchSegmentedControl: UISegmentedControl!
     
+    var collectionName: String!
     var collectionUID: String!
     var itemList = [ItemType]()
+    var filteredItemList = [ItemType]()
+    var inSearchMode = false
     var willReloadData: Bool = false
     var parentVC: ParentViewController?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         searchBar.delegate = self
+        searchBar.returnKeyType = UIReturnKeyType.done
+        searchBar.enablesReturnKeyAutomatically = false
         itemTableView.delegate = self
         itemTableView.dataSource = self
         itemTableView.backgroundColor = UIColor.clear
+        navigationItem.title = collectionName
         if let topItem = self.navigationController?.navigationBar.topItem {
             let button = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
             
@@ -64,13 +71,17 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if inSearchMode {
+            return filteredItemList.count
+        }
         return itemList.count
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         view.endEditing(true)
         itemTableView.deselectRow(at: indexPath, animated: true)
-        performSegue(withIdentifier: "editItemSegue", sender: itemList[indexPath.row])
+        let item = getItem(index: indexPath.row)
+        performSegue(withIdentifier: "editItemSegue", sender: item)
     }
     
     func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
@@ -84,8 +95,21 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     }
     
     func configureCell(cell: ItemCell, indexPath: IndexPath) {
-        let item = itemList[indexPath.row]
+        let item = getItem(index: indexPath.row)
+        
         cell.updateUI(item: item)
+    }
+    
+    func getItem(index: Int) -> ItemType {
+        var item: ItemType!
+        
+        if inSearchMode {
+            item = filteredItemList[index]
+        } else {
+            item = itemList[index]
+        }
+        
+        return item
     }
     
     private func populateItemCellData() {
@@ -93,6 +117,7 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         BusyModal.startBusyModalAndHideNav(targetViewController: self)
         itemDataRef.observeSingleEvent(of: DataEventType.value, with: { (snapshot) in
             if let itemSets = snapshot.value as? NSDictionary {
+                self.resetSearch()
                 self.itemList.removeAll()
                 for (_, item) in itemSets {
                     let itemDict = item as! NSDictionary
@@ -111,6 +136,7 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                     item.downloadImage()
                     self.itemList.append(item)
                 }
+                self.itemList = self.itemList.sorted(by: {$0.itemName < $1.itemName})
                 self.updateItemCount()
                 self.itemTableView.reloadData()
             }
@@ -118,8 +144,20 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         })
     }
     
+    private func resetSearch() {
+        inSearchMode = false
+        searchBar.text = ""
+    }
+    
     private func deleteItem(itemIndex: Int) {
-        let item = itemList[itemIndex]
+        var item: ItemType!
+        
+        if inSearchMode {
+            item = filteredItemList[itemIndex]
+        } else {
+            item = itemList[itemIndex]
+        }
+        
         let refItems = Database.database().reference().child("items").child(item.collectionID).child(item.itemID)
         BusyModal.startBusyModalAndHideNav(targetViewController: self)
         // Delete item in database
@@ -135,7 +173,14 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             }
         }
         BusyModal.stopBusyModalAndShowNav(targetViewController: self)
-        self.itemList.remove(at: itemIndex)
+        
+        if inSearchMode {
+            self.filteredItemList.remove(at: itemIndex)
+        } else {
+            self.itemList.remove(at: itemIndex)
+        }
+        
+        populateItemCellData()
     }
     
     private func updateItemCount() {
@@ -148,8 +193,49 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         }
     }
     
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchBar.text == nil || searchBar.text  == "" {
+            resetSearch()
+            view.endEditing(true)
+            itemTableView.reloadData()
+        } else {
+            inSearchMode = true
+            
+            let searchText = searchBar.text!.lowercased()
+            
+            if searchSegmentedControl.selectedSegmentIndex == 0 {
+                filteredItemList = itemList.filter({$0.itemName.lowercased().range(of: searchText) != nil})
+            } else {
+                filteredItemList = itemList.filter({$0.description.lowercased().range(of: searchText) != nil})
+            }
+            
+            
+//            if filteredItemList.isEmpty {
+//                notFoundLbl.isHidden = false
+//            } else {
+//                notFoundLbl.isHidden = true
+//            }
+            
+            itemTableView.reloadData()
+        }
+    }
+    
     @IBAction func addEditItemPressed(_ sender: Any) {
         performSegue(withIdentifier: "addItemSegue", sender: nil)
+    }
+    
+    @IBAction func searchSegmentChanged(_ sender: Any) {
+        if inSearchMode {
+            let searchText = searchBar.text!.lowercased()
+            
+            if searchSegmentedControl.selectedSegmentIndex == 0 {
+                filteredItemList = itemList.filter({$0.itemName.lowercased().range(of: searchText) != nil})
+            } else {
+                filteredItemList = itemList.filter({$0.description.lowercased().range(of: searchText) != nil})
+            }
+            
+            itemTableView.reloadData()
+        }
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
