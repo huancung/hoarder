@@ -22,6 +22,7 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
     var loadedItem: ItemType?
     var parentVC: ParentViewController?
     var editMode: Bool = false
+    var imageRemoved: Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -58,16 +59,12 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
         let takePhotoAction = UIAlertAction(title: "Take Photo", style: .default, handler: {
             (alert: UIAlertAction!) -> Void in
             self.imagePicker.sourceType = .camera
-            //self.imagePicker.allowsEditing = true
-
             self.present(self.imagePicker, animated: true, completion: nil)
         })
         
         let chooseFile = UIAlertAction(title: "Choose Photo", style: .default, handler: {
             (alert: UIAlertAction!) -> Void in
             self.imagePicker.sourceType = .photoLibrary
-            //self.imagePicker.allowsEditing = true
-            
             self.present(self.imagePicker, animated: true, completion: nil)
         })
         
@@ -79,7 +76,16 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
             let viewImage = UIAlertAction(title: "View Image", style: .default) { (alert) in
                 self.performSegue(withIdentifier: "imageZoomSegue", sender: nil)
             }
+            
             optionMenu.addAction(viewImage)
+            
+            let removeImage = UIAlertAction(title: "Remove Image", style: .default) { (alert) in
+                self.isImageSet = false
+                self.itemImage.image = UIImage(named: "imagePlaceholder")
+                self.imageRemoved = true;
+            }
+            
+            optionMenu.addAction(removeImage)
         }
         
         optionMenu.addAction(cancelAction)
@@ -100,7 +106,6 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
         if let img = info[UIImagePickerControllerEditedImage] as? UIImage
         {
             image = img
-            
         }
         else if let img = info[UIImagePickerControllerOriginalImage] as? UIImage
         {
@@ -127,8 +132,12 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
                 var imageID = ""
                 var imageURL = ""
                 if editMode {
-                    imageID = (loadedItem?.imageID)!
-                    imageURL = (loadedItem?.imageURL)!
+                    if imageRemoved {
+                        deleteSavedImage()
+                    } else {
+                        imageID = (loadedItem?.imageID)!
+                        imageURL = (loadedItem?.imageURL)!
+                    }
                 }
                 
                 saveItemInfo(itemName: name, description: description, imageID: imageID, imageURL: imageURL)
@@ -163,13 +172,17 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
             
             // Delete the old image if one exists
             if editMode {
-                if let oldImageID = loadedItem?.imageID {
-                    let oldImageRef = Storage.storage().reference().child("ItemImages").child(collectionUID).child("\(oldImageID).png")
-                    oldImageRef.delete { (error) in
-                        if let error = error {
-                            print(error.localizedDescription)
-                        }
-                    }
+                deleteSavedImage()
+            }
+        }
+    }
+    
+    private func deleteSavedImage() {
+        if let oldImageID = loadedItem?.imageID {
+            let oldImageRef = Storage.storage().reference().child("ItemImages").child(collectionUID).child("\(oldImageID).png")
+            oldImageRef.delete { (error) in
+                if let error = error {
+                    print(error.localizedDescription)
                 }
             }
         }
