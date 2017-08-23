@@ -15,6 +15,7 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
     @IBOutlet weak var itemImage: UIImageView!
     @IBOutlet weak var nameText: UITextField!
     @IBOutlet weak var descriptionText: UITextView!
+    @IBOutlet var cancelButton: UIBarButtonItem!
     
     var isImageSet = false
     var imagePicker: UIImagePickerController!
@@ -32,7 +33,9 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
             
         // Edit item mode
         if loadedItem != nil {
+            navigationItem.title = "Item Details"
             editMode = true
+            cancelButton.title = "Done"
             
             // load image
             if loadedItem?.itemImage != nil {
@@ -68,8 +71,6 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
             self.present(self.imagePicker, animated: true, completion: nil)
         })
         
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
-        
         optionMenu.addAction(takePhotoAction)
         optionMenu.addAction(chooseFile)
         if editMode || isImageSet {
@@ -88,6 +89,7 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
             optionMenu.addAction(removeImage)
         }
         
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
         optionMenu.addAction(cancelAction)
         
         self.present(optionMenu, animated: true, completion: nil)
@@ -179,12 +181,7 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
     
     private func deleteSavedImage() {
         if let oldImageID = loadedItem?.imageID {
-            let oldImageRef = Storage.storage().reference().child("ItemImages").child(collectionUID).child("\(oldImageID).png")
-            oldImageRef.delete { (error) in
-                if let error = error {
-                    print(error.localizedDescription)
-                }
-            }
+            DataAccessUtilities.deleteImageFromStorage(imageID: oldImageID, collectionID: collectionUID)
         }
     }
     
@@ -216,18 +213,18 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
     
     private func saveItemInfo(itemName: String, description: String, imageID: String, imageURL: String) {
         if let uid = Auth.auth().currentUser?.uid {
-            let refCollectionInfo = Database.database().reference().child("items").child(collectionUID)
+            let refItemInfo = Database.database().reference().child("items").child(collectionUID)
             var key: String!
             
             if editMode {
                 key = loadedItem?.itemID
             } else {
-                key = refCollectionInfo.childByAutoId().key
+                key = refItemInfo.childByAutoId().key
             }
             
             let newItem = ["ownerID": uid, "collectionID" : collectionUID, "name": itemName ,"description": description, "itemID": key, "imageID": imageID, "imageURL": imageURL, "dateAdded": DateTimeUtilities.getTimestamp()] as [String : Any]
             
-            refCollectionInfo.child(key).setValue(newItem)
+            refItemInfo.child(key).setValue(newItem)
         }
         BusyModal.stopBusyModalAndShowNav(targetViewController: self)
         self.parentVC?.willReloadData = true

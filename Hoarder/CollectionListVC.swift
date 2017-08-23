@@ -151,6 +151,7 @@ class CollectionListVC: UIViewController, UITableViewDelegate, UITableViewDataSo
                     destination.parentVC = self
                     destination.collectionName = collection.collectionName
                     destination.collectionUID = collection.collectionID
+                    destination.collectionsList = collectionList.sorted(by: {$1.collectionName > $0.collectionName})
                 }
             }
         }

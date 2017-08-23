@@ -11,34 +11,42 @@ import FirebaseDatabase
 import FirebaseAuth
 import FirebaseStorage
 
-class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate,ParentViewController {
+class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate, UIPickerViewDataSource, UIPickerViewDelegate, ParentViewController {
     @IBOutlet weak var itemTableView: UITableView!
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var searchSegmentedControl: UISegmentedControl!
+    @IBOutlet var actionButton: UIBarButtonItem!
+    @IBOutlet var addItemButton: UIBarButtonItem!
+    var doneButtonItem: UIBarButtonItem!
     
     var collectionName: String!
     var collectionUID: String!
+    var collectionsList: [CollectionType]!
     var itemList = [ItemType]()
     var filteredItemList = [ItemType]()
     var inSearchMode = false
     var willReloadData: Bool = false
     var parentVC: ParentViewController?
     
+    var testdata = ["opt 1","opt 2","opt 3","opt 4","opt 5"]
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        doneButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneButtonPressed))
         searchBar.delegate = self
         searchBar.returnKeyType = UIReturnKeyType.done
         searchBar.enablesReturnKeyAutomatically = false
         itemTableView.delegate = self
         itemTableView.dataSource = self
         itemTableView.backgroundColor = UIColor.clear
+        itemTableView.allowsMultipleSelectionDuringEditing = true
         navigationItem.title = collectionName
         if let topItem = self.navigationController?.navigationBar.topItem {
             let button = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
             
             topItem.backBarButtonItem = button
         }
-
+        
         populateItemCellData()
     }
     
@@ -79,12 +87,18 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         view.endEditing(true)
-        itemTableView.deselectRow(at: indexPath, animated: true)
-        let item = getItem(index: indexPath.row)
-        performSegue(withIdentifier: "editItemSegue", sender: item)
+        
+        if !itemTableView.isEditing {
+            itemTableView.deselectRow(at: indexPath, animated: true)
+            let item = getItem(index: indexPath.row)
+            performSegue(withIdentifier: "editItemSegue", sender: item)
+        } else {
+            print(itemTableView.indexPathsForSelectedRows ?? "")
+        }
     }
     
     func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
+        
         let delete = UITableViewRowAction(style: .destructive, title: "Delete") { (action, indexPath) in
             print("delete \(indexPath.row)")
             self.deleteItem(itemIndex: indexPath.row)
@@ -236,6 +250,120 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             
             itemTableView.reloadData()
         }
+    }
+    
+    func doneButtonPressed() {
+        if let selectedItems = itemTableView.indexPathsForSelectedRows, selectedItems.count > 0 {
+            let optionMenu = UIAlertController(title: "Choose an Action", message: nil, preferredStyle: .actionSheet)
+            
+            let copyAction = UIAlertAction(title: "Copy Items to...", style: .default, handler: {
+                (alert: UIAlertAction!) -> Void in
+                //do something
+                self.collectionSelect()
+            })
+            
+            let moveAction = UIAlertAction(title: "Move Items to...", style: .default, handler: {
+                (alert: UIAlertAction!) -> Void in
+                //do something
+                self.collectionSelect()
+            })
+            
+            let deleteAction = UIAlertAction(title: "Delete Selected Items", style: .destructive, handler: {
+                (alert: UIAlertAction!) -> Void in
+                //do something
+                self.endEditMode()
+            })
+            
+            optionMenu.addAction(copyAction)
+            optionMenu.addAction(moveAction)
+            optionMenu.addAction(deleteAction)
+            
+            let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: {
+                (alert: UIAlertAction!) -> Void in
+                //do something
+                self.endEditMode()
+            })
+
+            optionMenu.addAction(cancelAction)
+            
+            self.present(optionMenu, animated: true, completion: nil)
+        } else {
+            endEditMode()
+        }
+    }
+    
+    private func collectionSelect() {
+        if collectionsList.count == 1 {
+            AlertUtil.message(title: "Not Gonna Happen", message: "You have to create another hoard to do this action!", targetViewController: self)
+        }
+        
+        let vc = UIViewController()
+        vc.preferredContentSize = CGSize(width: 250,height: 200)
+        let pickerView = UIPickerView(frame: CGRect(x: 0, y: 0, width: 250, height: 200))
+        pickerView.delegate = self
+        pickerView.dataSource = self
+        vc.view.addSubview(pickerView)
+        
+        let selectCollectionAlert = UIAlertController(title: "Choose a collection", message: nil, preferredStyle: UIAlertControllerStyle.alert)
+        
+        selectCollectionAlert.setValue(vc, forKey: "contentViewController")
+        selectCollectionAlert.addAction(UIAlertAction(title: "Done", style: .default, handler: {
+            (alert: UIAlertAction!) -> Void in
+            //do something
+            self.endEditMode()
+        }))
+        
+        selectCollectionAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: {
+            (alert: UIAlertAction!) -> Void in
+            self.endEditMode()
+        }))
+        self.present(selectCollectionAlert, animated: true)
+    }
+    
+    private func endEditMode() {
+        itemTableView.setEditing(false, animated: true)
+        navigationItem.setRightBarButton(nil, animated: true)
+        navigationItem.setRightBarButtonItems([addItemButton, actionButton], animated: true)
+        navigationItem.setHidesBackButton(false, animated: true)
+    }
+    
+    @IBAction func actionButtonPressed(_ sender: Any) {
+        if !itemTableView.isEditing {
+            itemTableView.setEditing(true, animated: true)
+            navigationItem.setHidesBackButton(true, animated: true)
+            navigationItem.setRightBarButton(nil, animated: true)
+            navigationItem.setRightBarButton(doneButtonItem, animated: true)
+        }
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+        
+        return collectionsList[row].collectionName.capitalized
+    }
+    
+    // Rows
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        return collectionsList.count
+    }
+    
+    // Columns
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        return 1
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, viewForRow row: Int, forComponent component: Int, reusing view: UIView?) -> UIView {
+        var label: UILabel
+        if let view = view as? UILabel { label = view }
+        else { label = UILabel() }
+        
+        label.textColor = UIColor.darkGray
+        label.textAlignment = .center
+        label.font = UIFont(name: "Helvetica Neue", size: 25.0)
+        label.adjustsFontSizeToFitWidth = false
+        label.minimumScaleFactor = 0.5
+        label.text = collectionsList[row].collectionName
+        
+        return label
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

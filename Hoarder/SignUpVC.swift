@@ -84,7 +84,7 @@ class SignUpVC: UIViewController {
                     
                     BusyModal.stopBusyModalAndShowNav(targetViewController: self)
                     
-                    AlertUtil.message(title: "Hooray!", message: "You're account has been created! Please verify your email. Happy hoarding!", targetViewController: self)
+                    AlertUtil.messageThenPop(title: "Hooray!", message: "You're account has been created! Please verify your email. Happy hoarding!", targetViewController: self)
                 } else if let error = returnError {
                     BusyModal.stopBusyModal()
                     AlertUtil.alert(message: error.localizedDescription, targetViewController: self)

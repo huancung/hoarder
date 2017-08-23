@@ -7,6 +7,7 @@
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12089"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
+        <capability name="Navigation items with more than one left or right bar item" minToolsVersion="7.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -404,12 +405,12 @@
                                     <action selector="segControlValueChanged:" destination="eld-fu-arW" eventType="valueChanged" id="vP0-yl-Zu5"/>
                                 </connections>
                             </segmentedControl>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="135" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="koq-jS-ulO">
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" style="plain" separatorStyle="none" allowsSelectionDuringEditing="YES" allowsMultipleSelectionDuringEditing="YES" rowHeight="135" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="koq-jS-ulO">
                                 <rect key="frame" x="0.0" y="144" width="375" height="503"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <inset key="separatorInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                 <prototypes>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="itemCell" rowHeight="135" id="lvn-6R-X4B" customClass="ItemCell" customModule="Hoarder" customModuleProvider="target">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="blue" indentationWidth="10" reuseIdentifier="itemCell" rowHeight="135" id="lvn-6R-X4B" customClass="ItemCell" customModule="Hoarder" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="28" width="375" height="135"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="lvn-6R-X4B" id="ig5-Cz-Mmg">
@@ -508,13 +509,22 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="Item List" id="ETR-bk-z54">
-                        <barButtonItem key="rightBarButtonItem" systemItem="add" id="ipR-3O-gN0">
-                            <connections>
-                                <action selector="addEditItemPressed:" destination="49T-D1-gg6" id="soz-68-fcd"/>
-                            </connections>
-                        </barButtonItem>
+                        <rightBarButtonItems>
+                            <barButtonItem systemItem="add" id="ipR-3O-gN0">
+                                <connections>
+                                    <action selector="addEditItemPressed:" destination="49T-D1-gg6" id="soz-68-fcd"/>
+                                </connections>
+                            </barButtonItem>
+                            <barButtonItem systemItem="action" id="1pC-U8-jyd">
+                                <connections>
+                                    <action selector="actionButtonPressed:" destination="49T-D1-gg6" id="j22-Lw-pmt"/>
+                                </connections>
+                            </barButtonItem>
+                        </rightBarButtonItems>
                     </navigationItem>
                     <connections>
+                        <outlet property="actionButton" destination="1pC-U8-jyd" id="Vbo-Qv-Avb"/>
+                        <outlet property="addItemButton" destination="ipR-3O-gN0" id="OFl-jy-WFI"/>
                         <outlet property="itemTableView" destination="koq-jS-ulO" id="HhU-yL-LaB"/>
                         <outlet property="searchBar" destination="IhP-vr-ZLb" id="BJK-cN-Ua4"/>
                         <outlet property="searchSegmentedControl" destination="P3o-RQ-IIj" id="ecJ-BZ-hlF"/>
@@ -632,6 +642,7 @@
                         </barButtonItem>
                     </navigationItem>
                     <connections>
+                        <outlet property="cancelButton" destination="YO4-fj-fq6" id="wZM-1v-XLP"/>
                         <outlet property="descriptionText" destination="wk0-1d-QwT" id="kg0-xJ-inh"/>
                         <outlet property="itemImage" destination="ykT-dk-5bH" id="srj-fT-GqN"/>
                         <outlet property="nameText" destination="oPv-bw-lxE" id="IvX-xi-Y6G"/>
@@ -690,7 +701,7 @@
                                 <action selector="donePressed:" destination="YPE-bH-f3v" id="n1I-Nn-YEA"/>
                             </connections>
                         </barButtonItem>
-                        <barButtonItem key="rightBarButtonItem" title="Save" id="KkP-Q6-zER">
+                        <barButtonItem key="rightBarButtonItem" image="downloadIcon" id="KkP-Q6-zER">
                             <connections>
                                 <action selector="saveImagePressed:" destination="YPE-bH-f3v" id="HQf-yl-2B0"/>
                             </connections>
@@ -1130,6 +1141,7 @@
     </scenes>
     <resources>
         <image name="Hoarder" width="332" height="97"/>
+        <image name="downloadIcon" width="25" height="25"/>
         <image name="favorite" width="512" height="512"/>
         <image name="imagePlaceholder" width="420" height="420"/>
         <image name="settings" width="256" height="256"/>

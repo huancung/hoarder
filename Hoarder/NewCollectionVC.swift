@@ -39,7 +39,7 @@ class NewCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataS
             
             let category = sortedCollectionCategories[categoryPicker.selectedRow(inComponent: 0)]
             
-            AlertUtil.message(title: "New Collection Created!", message: "Now you can start adding items to this collection!", targetViewController: self)
+            AlertUtil.messageThenPop(title: "New Collection Created!", message: "Now you can start adding items to this collection!", targetViewController: self)
             
             saveCollectionInfo(collectionName: collectionName, category: category, description: description)
             parentVC?.willReloadData = true
