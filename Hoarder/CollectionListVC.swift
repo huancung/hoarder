@@ -7,8 +7,6 @@
 //
 
 import UIKit
-import FirebaseDatabase
-import FirebaseAuth
 
 class CollectionListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, ParentViewController {
     @IBOutlet weak var collectionTableView: UITableView!
@@ -77,34 +75,13 @@ class CollectionListVC: UIViewController, UITableViewDelegate, UITableViewDataSo
     }
     
     private func populateCollectionData() {
-        let uid = Auth.auth().currentUser?.uid
-        let collectionRef = Database.database().reference().child("collections").child(uid!)
         BusyModal.startBusyModal(targetViewController: self)
-        collectionRef.observeSingleEvent(of: DataEventType.value, with: { (snapshot) in
-            if let collectionSet = snapshot.value as? NSDictionary {
-                self.collectionList.removeAll()
-                
-                for (_, collection) in collectionSet {
-                    let myCollection = collection as! NSDictionary
-                    let name = myCollection["name"] as! String
-                    let category = myCollection["category"] as! String
-                    let description = myCollection["description"] as! String
-                    let collectionID = myCollection["collectionID"] as! String
-                    let ownerID = myCollection["ownerUid"] as! String
-                    let itemCount = myCollection["itemCount"] as! Int
-                    let creationDate = myCollection["creationDate"] as! Double
-                    let isFavorite = myCollection["isFavorite"] as! String
-                    let creationDateString = DateTimeUtilities.formatTimeInterval(timeInterval: myCollection["creationDate"] as! Double)
-                   
-                    let collectionObj = CollectionType(collectionName: name, category: category, description: description, collectionID: collectionID, itemCount: itemCount, ownerID: ownerID, creationDateString: creationDateString, creationDate: creationDate, isFavorite: isFavorite)
-                    self.collectionList.append(collectionObj)
-                }
-                
-                self.setSortOrder(sortBy: self.sortSegController.selectedSegmentIndex)
-                BusyModal.stopBusyModal()
-                self.collectionTableView.reloadData()
-            }
-        })
+        DataAccessUtilities.getCollectionsList { (returnedCollectionsList) in
+            self.collectionList = returnedCollectionsList
+            self.setSortOrder(sortBy: self.sortSegController.selectedSegmentIndex)
+            BusyModal.stopBusyModal()
+            self.collectionTableView.reloadData()
+        }
     }
     
     private func setSortOrder(sortBy: Int) {

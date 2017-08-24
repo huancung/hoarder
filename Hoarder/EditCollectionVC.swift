@@ -7,9 +7,6 @@
 //
 
 import UIKit
-import FirebaseDatabase
-import FirebaseAuth
-import FirebaseStorage
 
 class EditCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource{
     @IBOutlet weak var collectionNameText: UITextField!
@@ -154,55 +151,25 @@ class EditCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewData
      - description: Description of the collection.
      */
     private func saveCollectionInfo(collectionName: String, category: String, description: String) {
-        let refCollectionInfo = Database.database().reference().child("collections")
         BusyModal.startBusyModalAndHideNav(targetViewController: self)
-        if let uid = Auth.auth().currentUser?.uid {
-            let collectionID = collectionObj.collectionID
-            let creationDate =  collectionObj.dateCreated
-            let newCollection = ["ownerUid" : uid, "name": collectionName, "category": category ,"description": description, "collectionID": collectionID, "itemCount": 0, "creationDate": creationDate, "isFavorite": isFavorite] as [String : Any]
-            
-            refCollectionInfo.child(uid).child(collectionID).setValue(newCollection)
-        }
+        
+        let collectionID = collectionObj.collectionID
+        let creationDate =  collectionObj.dateCreated
+        DataAccessUtilities.updateCollectionInfo(collectionName: collectionName, category: category, description: description, collectionID: collectionID, creationDate: creationDate, isFavorite: isFavorite)
+        
         BusyModal.stopBusyModalAndShowNav(targetViewController: self)
         parentVC?.willReloadData = true
         self.navigationController?.popViewController(animated: true)
     }
     
     private func deleteCollection() {
-        let refCollectionInfo = Database.database().reference().child("collections")
+        BusyModal.startBusyModalAndHideNav(targetViewController: self)
         let collectionID = collectionObj.collectionID
+        DataAccessUtilities.deleteCollection(collectionID: collectionID)
+        DataAccessUtilities.deleteItems(collectionID: collectionID)
         
-        if let uid = Auth.auth().currentUser?.uid {
-            refCollectionInfo.child(uid).child(collectionID).setValue(nil)
-        }
-        deleteItem(collectionID: collectionID)
+        BusyModal.stopBusyModalAndShowNav(targetViewController: self)
         parentVC?.willReloadData = true
         self.navigationController?.popViewController(animated: true)
-    }
-    
-    private func deleteItem(collectionID: String) {
-        let refItems = Database.database().reference().child("items").child(collectionID)
-        BusyModal.startBusyModalAndHideNav(targetViewController: self)
-        // Getting list of imageIDs
-        refItems.observeSingleEvent(of: DataEventType.value, with: { (snapshot) in
-            if let itemSets = snapshot.value as? NSDictionary {
-                for (_, item) in itemSets {
-                    let itemDict = item as! NSDictionary
-                    let imageID = itemDict["imageID"] as! String
-                    
-                    // Delete saved image
-                    let storageRef = Storage.storage().reference().child("ItemImages").child(collectionID).child("\(imageID).png")
-                    storageRef.delete { (error) in
-                        if let error = error {
-                            print(error.localizedDescription)
-                        }
-                    }
-                }
-            }
-            
-            // Delete item in database
-            refItems.setValue(nil)
-            BusyModal.stopBusyModalAndShowNav(targetViewController: self)
-        })
     }
 }

@@ -7,9 +7,6 @@
 //
 
 import UIKit
-import FirebaseAuth
-import FirebaseDatabase
-import FirebaseStorage
 
 class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     @IBOutlet weak var itemImage: UIImageView!
@@ -100,24 +97,6 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
         self.navigationController?.popViewController(animated: true)
     }
     
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
-        imagePicker.dismiss(animated: true, completion: nil)
-        
-        var image : UIImage!
-        
-        if let img = info[UIImagePickerControllerEditedImage] as? UIImage
-        {
-            image = img
-        }
-        else if let img = info[UIImagePickerControllerOriginalImage] as? UIImage
-        {
-            image = img
-        }
-        
-        itemImage.image = image
-        isImageSet = true
-    }
-    
     @IBAction func saveButtonPressed(_ sender: Any) {
         
         if let name = nameText.text, !name.isEmpty {
@@ -149,39 +128,47 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
         }
     }
     
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+        imagePicker.dismiss(animated: true, completion: nil)
+        
+        var image : UIImage!
+        
+        if let img = info[UIImagePickerControllerEditedImage] as? UIImage
+        {
+            image = img
+        }
+        else if let img = info[UIImagePickerControllerOriginalImage] as? UIImage
+        {
+            image = img
+        }
+        
+        itemImage.image = image
+        isImageSet = true
+    }
+    
     private func saveItemWithImage(itemName: String, description: String) {
-        let imageKey = NSUUID().uuidString
         if let image = itemImage.image {
-            let storageRef = Storage.storage().reference().child("ItemImages").child(collectionUID).child("\(imageKey).png")
-            
-            // Half the image size
+            // 1/6 the image size
             let targetSize = CGSize(width: image.size.width/6, height: image.size.height/6)
-            
             let resizedImage = resizeImage(image: image, targetSize: targetSize)
-            
             let imageData = UIImagePNGRepresentation(resizedImage)!
             
-            let metadata = StorageMetadata()
-            metadata.contentType = "image/png"
-            
-            storageRef.putData(imageData, metadata: metadata).observe(.success, handler: { (snapshot) in
-                var imageURL = ""
-                if let url = snapshot.metadata?.downloadURL()?.absoluteString {
-                    imageURL = url
+            DataAccessUtilities.saveImage(imageData: imageData, collectionID: collectionUID, handler: { (success, imageURL, imageKey) in
+                if success {
+                    self.saveItemInfo(itemName: itemName, description: description, imageID: imageKey, imageURL: imageURL)
+                
+                    // Delete the old image if one exists
+                    if self.editMode {
+                        self.deleteSavedImage()
+                    }
                 }
-                self.saveItemInfo(itemName: itemName, description: description, imageID: imageKey, imageURL: imageURL)
             })
-            
-            // Delete the old image if one exists
-            if editMode {
-                deleteSavedImage()
-            }
         }
     }
     
     private func deleteSavedImage() {
         if let oldImageID = loadedItem?.imageID {
-            DataAccessUtilities.deleteImageFromStorage(imageID: oldImageID, collectionID: collectionUID)
+            DataAccessUtilities.deleteItemImageFromStorage(imageID: oldImageID, collectionID: collectionUID)
         }
     }
     
@@ -212,20 +199,13 @@ class ItemVC: UIViewController, UIImagePickerControllerDelegate, UINavigationCon
     }
     
     private func saveItemInfo(itemName: String, description: String, imageID: String, imageURL: String) {
-        if let uid = Auth.auth().currentUser?.uid {
-            let refItemInfo = Database.database().reference().child("items").child(collectionUID)
-            var key: String!
-            
-            if editMode {
-                key = loadedItem?.itemID
-            } else {
-                key = refItemInfo.childByAutoId().key
-            }
-            
-            let newItem = ["ownerID": uid, "collectionID" : collectionUID, "name": itemName ,"description": description, "itemID": key, "imageID": imageID, "imageURL": imageURL, "dateAdded": DateTimeUtilities.getTimestamp()] as [String : Any]
-            
-            refItemInfo.child(key).setValue(newItem)
+        
+        if editMode {
+            DataAccessUtilities.saveItemInfo(itemName: itemName, description: description, imageID: imageID, imageURL: imageURL, collectionID: collectionUID, itemID: loadedItem?.itemID)
+        } else {
+            DataAccessUtilities.saveItemInfo(itemName: itemName, description: description, imageID: imageID, imageURL: imageURL, collectionID: collectionUID, itemID: nil)
         }
+        
         BusyModal.stopBusyModalAndShowNav(targetViewController: self)
         self.parentVC?.willReloadData = true
         self.navigationController?.popViewController(animated: true)

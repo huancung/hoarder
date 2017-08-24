@@ -7,9 +7,6 @@
 //
 
 import UIKit
-import FirebaseDatabase
-import FirebaseAuth
-import FirebaseStorage
 
 class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate, UIPickerViewDataSource, UIPickerViewDelegate, ParentViewController {
     @IBOutlet weak var itemTableView: UITableView!
@@ -127,35 +124,17 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     }
     
     private func populateItemCellData() {
-        let itemDataRef = Database.database().reference().child("items").child(collectionUID)
         BusyModal.startBusyModalAndHideNav(targetViewController: self)
-        itemDataRef.observeSingleEvent(of: DataEventType.value, with: { (snapshot) in
-            if let itemSets = snapshot.value as? NSDictionary {
-                self.resetSearch()
-                self.itemList.removeAll()
-                for (_, item) in itemSets {
-                    let itemDict = item as! NSDictionary
-                    
-                    let ownerID = itemDict["ownerID"] as! String
-                    let collectionID = itemDict["collectionID"] as! String
-                    let itemID = itemDict["itemID"] as! String
-                    let name = itemDict["name"] as! String
-                    let description = itemDict["description"] as! String
-                    let imageID = itemDict["imageID"] as! String
-                    let imageURL = itemDict["imageURL"] as! String
-                    let dateAdded = itemDict["dateAdded"] as! Double
-                    let dateAddedString = DateTimeUtilities.formatTimeInterval(timeInterval: dateAdded)
-                    
-                    let item = ItemType(ownerID: ownerID, collectionID: collectionID, itemID: itemID, itemName: name, description: description, imageID: imageID, imageURL: imageURL, dateAdded: dateAdded, dateAddedString: dateAddedString)
-                    item.downloadImage()
-                    self.itemList.append(item)
-                }
-                self.itemList = self.itemList.sorted(by: {$0.itemName < $1.itemName})
-                self.updateItemCount()
-                self.itemTableView.reloadData()
-            }
+        DataAccessUtilities.getItemsList(collectionID: collectionUID) { (returnItemList) in
+            print("here1")
+            self.itemList = returnItemList.sorted(by: {$0.itemName < $1.itemName})
+            print("here2")
+            self.itemTableView.reloadData()
+            print("here3")
+            DataAccessUtilities.updateItemCount(collectionID: self.collectionUID, count: self.itemList.count)
+            print("here5")
             BusyModal.stopBusyModalAndShowNav(targetViewController: self)
-        })
+        }
     }
     
     private func resetSearch() {
@@ -172,20 +151,15 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             item = itemList[itemIndex]
         }
         
-        let refItems = Database.database().reference().child("items").child(item.collectionID).child(item.itemID)
         BusyModal.startBusyModalAndHideNav(targetViewController: self)
         // Delete item in database
-        refItems.setValue(nil)
+        DataAccessUtilities.deleteItemInfo(collectionID: collectionUID, itemID: item.itemID)
         
         // Delete saved image
         if !item.imageID.isEmpty {
-            let storageRef = Storage.storage().reference().child("ItemImages").child(item.collectionID).child("\(item.imageID).png")
-            storageRef.delete { (error) in
-                if let error = error {
-                    print(error.localizedDescription)
-                }
-            }
+            DataAccessUtilities.deleteItemImageFromStorage(imageID: item.imageID, collectionID: collectionUID)
         }
+        
         BusyModal.stopBusyModalAndShowNav(targetViewController: self)
         
         if inSearchMode {
@@ -195,16 +169,6 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         }
         
         populateItemCellData()
-    }
-    
-    private func updateItemCount() {
-        let refCollectionInfo = Database.database().reference().child("collections")
-        
-        if let uid = Auth.auth().currentUser?.uid {
-            let newCollection = ["itemCount": itemList.count] as [String : Any]
-            
-            refCollectionInfo.child(uid).child(collectionUID).updateChildValues(newCollection)
-        }
     }
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
