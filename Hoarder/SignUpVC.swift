@@ -7,9 +7,6 @@
 //
 
 import UIKit
-import Firebase
-import FirebaseAuth
-import FirebaseDatabase
 
 class SignUpVC: UIViewController {
     @IBOutlet weak var emailText: UITextField!
@@ -63,7 +60,7 @@ class SignUpVC: UIViewController {
             self.view.endEditing(true)
             BusyModal.startBusyModalAndHideNav(targetViewController: self)
             
-            Auth.auth().createUser(withEmail: emailText.text!, password: passwordText.text!, completion: { (returnUser, returnError) in
+            DataAccessUtilities.createNewAccount(email: emailText.text!, password: passwordText.text!, handler: { (returnUser, returnError) in
                 if let user = returnUser {
                     print(user.uid)
                     print(user.email!)
@@ -79,7 +76,7 @@ class SignUpVC: UIViewController {
                         lastName = lName
                     }
                     
-                    self.savePersonalInfo(uid: user.uid, firstName: firstName, lastName: lastName, email: user.email!)
+                    DataAccessUtilities.savePersonalInfo(uid: user.uid, firstName: firstName, lastName: lastName, email: user.email!)
                     user.sendEmailVerification(completion: nil)
                     
                     BusyModal.stopBusyModalAndShowNav(targetViewController: self)
@@ -91,22 +88,6 @@ class SignUpVC: UIViewController {
                 }
             })
         }
-    }
-    
-    /**
-     Save user's personal information.
-     - parameters:
-        - uid: Unique ID provided by the user account
-        - firstName: User's first name
-        - lastName: User's last name
-        - email: User's email
-    */
-    private func savePersonalInfo(uid: String, firstName: String, lastName: String, email: String) {
-        let refPersonalInfo = Database.database().reference().child("personalInfo")
-        
-        let newUser = ["uid" : uid, "firstName": firstName, "lastName": lastName, "email": email]
-        
-        refPersonalInfo.child(uid).setValue(newUser)
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {

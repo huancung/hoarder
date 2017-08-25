@@ -837,7 +837,7 @@
                                 <action selector="cancelButtonPressed:" destination="RV3-Bb-hMb" id="Ze7-xJ-AU0"/>
                             </connections>
                         </barButtonItem>
-                        <barButtonItem key="rightBarButtonItem" style="plain" systemItem="trash" id="pFG-uj-Cop">
+                        <barButtonItem key="rightBarButtonItem" systemItem="trash" id="pFG-uj-Cop">
                             <connections>
                                 <action selector="trashButtonPressed:" destination="RV3-Bb-hMb" id="fOF-8X-iGM"/>
                             </connections>

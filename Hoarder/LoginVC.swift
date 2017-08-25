@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import FirebaseAuth
 
 class LoginVC: UIViewController {
     @IBOutlet weak var emailText: UITextField!
@@ -30,7 +29,7 @@ class LoginVC: UIViewController {
     
     func logout() {
         do {
-            try Auth.auth().signOut()
+            try DataAccessUtilities.signOut()
         } catch let error as NSError {
             print(error.localizedDescription)
         }
@@ -64,7 +63,7 @@ class LoginVC: UIViewController {
             
             if !errors {
                 BusyModal.startBusyModal(targetViewController: self)
-                Auth.auth().signIn(withEmail: email, password: password, completion: { (returnUser, returnError) in
+                DataAccessUtilities.signIn(email: email, password: password, completion: { (returnUser, returnError) in
                     if let user = returnUser {
                         print(user.uid)
                         print(user.email!)

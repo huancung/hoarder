@@ -25,7 +25,9 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     var willReloadData: Bool = false
     var parentVC: ParentViewController?
     
-    var testdata = ["opt 1","opt 2","opt 3","opt 4","opt 5"]
+    enum ItemActionOption: String {
+        case copy, move
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -89,15 +91,12 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             itemTableView.deselectRow(at: indexPath, animated: true)
             let item = getItem(index: indexPath.row)
             performSegue(withIdentifier: "editItemSegue", sender: item)
-        } else {
-            print(itemTableView.indexPathsForSelectedRows ?? "")
         }
     }
     
     func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
         
         let delete = UITableViewRowAction(style: .destructive, title: "Delete") { (action, indexPath) in
-            print("delete \(indexPath.row)")
             self.deleteItem(itemIndex: indexPath.row)
             self.itemTableView.deleteRows(at: [indexPath], with: .fade)
         }
@@ -126,13 +125,9 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     private func populateItemCellData() {
         BusyModal.startBusyModalAndHideNav(targetViewController: self)
         DataAccessUtilities.getItemsList(collectionID: collectionUID) { (returnItemList) in
-            print("here1")
             self.itemList = returnItemList.sorted(by: {$0.itemName < $1.itemName})
-            print("here2")
             self.itemTableView.reloadData()
-            print("here3")
-            DataAccessUtilities.updateItemCount(collectionID: self.collectionUID, count: self.itemList.count)
-            print("here5")
+            DataAccessUtilities.updateItemCount(collectionID: self.collectionUID)
             BusyModal.stopBusyModalAndShowNav(targetViewController: self)
         }
     }
@@ -222,14 +217,12 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             
             let copyAction = UIAlertAction(title: "Copy Items to...", style: .default, handler: {
                 (alert: UIAlertAction!) -> Void in
-                //do something
-                self.collectionSelect()
+                self.collectionSelect(itemAction: ItemActionOption.copy)
             })
             
             let moveAction = UIAlertAction(title: "Move Items to...", style: .default, handler: {
                 (alert: UIAlertAction!) -> Void in
-                //do something
-                self.collectionSelect()
+                self.collectionSelect(itemAction: ItemActionOption.move)
             })
             
             let deleteAction = UIAlertAction(title: "Delete Selected Items", style: .destructive, handler: {
@@ -256,7 +249,7 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         }
     }
     
-    private func collectionSelect() {
+    private func collectionSelect(itemAction: ItemActionOption) {
         if collectionsList.count == 1 {
             AlertUtil.message(title: "Not Gonna Happen", message: "You have to create another hoard to do this action!", targetViewController: self)
         }
@@ -273,8 +266,82 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         selectCollectionAlert.setValue(vc, forKey: "contentViewController")
         selectCollectionAlert.addAction(UIAlertAction(title: "Done", style: .default, handler: {
             (alert: UIAlertAction!) -> Void in
-            //do something
-            self.endEditMode()
+            
+            let toCollectionID = self.collectionsList[pickerView.selectedRow(inComponent: 0)].collectionID
+            
+            // We will do nothing if we are moving or copying to the same collection
+            if toCollectionID != self.collectionUID {
+                let selectedIndexPaths = self.itemTableView.indexPathsForSelectedRows
+                // Copy action or move action
+                if selectedIndexPaths != nil && itemAction == ItemActionOption.copy {
+                    BusyModal.startBusyModal(targetViewController: self)
+                    // Copy items
+                    for indexPath in selectedIndexPaths! {
+                        var itemToCopy: ItemType
+                        if self.inSearchMode {
+                            itemToCopy = self.filteredItemList[indexPath.row]
+                        } else {
+                            itemToCopy = self.itemList[indexPath.row]
+                        }
+                        
+                        DataAccessUtilities.copyItem(item: itemToCopy, toCollectionID: toCollectionID)
+                    }
+                    BusyModal.stopBusyModal()
+                    AlertUtil.message(title: "\(selectedIndexPaths?.count ?? 0) Items Copied!", message: "", targetViewController: self)
+                } else if selectedIndexPaths != nil && itemAction == ItemActionOption.move{
+                    BusyModal.startBusyModal(targetViewController: self)
+                    // Move Items
+                    
+                    for indexPath in selectedIndexPaths! {
+                        var itemToMove: ItemType
+                        if self.inSearchMode {
+                            itemToMove = self.filteredItemList[indexPath.row]
+                        } else {
+                            itemToMove = self.itemList[indexPath.row]
+                        }
+                        
+                        DataAccessUtilities.copyItem(item: itemToMove, toCollectionID: toCollectionID)
+                        
+                        DataAccessUtilities.deleteItemInfo(collectionID: itemToMove.collectionID, itemID: itemToMove.itemID)
+                        
+                        if itemToMove.imageID != "" {
+                            DataAccessUtilities.deleteItemImageFromStorage(imageID: itemToMove.imageID, collectionID: itemToMove.collectionID)
+                        }
+                    }
+                    BusyModal.stopBusyModal()
+                    
+                    AlertUtil.message(title: "\(selectedIndexPaths?.count ?? 0) Items Moved!", message: "", targetViewController: self)
+                    self.populateItemCellData()
+                } else {
+                    BusyModal.startBusyModal(targetViewController: self)
+                    // Move Items
+                    
+                    for indexPath in selectedIndexPaths! {
+                        var itemToMove: ItemType
+                        if self.inSearchMode {
+                            itemToMove = self.filteredItemList[indexPath.row]
+                        } else {
+                            itemToMove = self.itemList[indexPath.row]
+                        }
+                        
+                        DataAccessUtilities.deleteItemInfo(collectionID: itemToMove.collectionID, itemID: itemToMove.itemID)
+                        
+                        if itemToMove.imageID != "" {
+                            DataAccessUtilities.deleteItemImageFromStorage(imageID: itemToMove.imageID, collectionID: itemToMove.collectionID)
+                        }
+                    }
+                    BusyModal.stopBusyModal()
+                    
+                    AlertUtil.message(title: "\(selectedIndexPaths?.count ?? 0) Items Deleted!", message: "", targetViewController: self)
+                    self.populateItemCellData()
+                }
+                
+                DataAccessUtilities.updateItemCount(collectionID: toCollectionID)
+                self.endEditMode()
+            } else {
+                AlertUtil.alert(message: "Pick a different collection!", targetViewController: self)
+            }
+            
         }))
         
         selectCollectionAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: {
@@ -296,6 +363,7 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
             itemTableView.setEditing(true, animated: true)
             navigationItem.setHidesBackButton(true, animated: true)
             navigationItem.setRightBarButton(nil, animated: true)
+            doneButtonItem.isEnabled = true
             navigationItem.setRightBarButton(doneButtonItem, animated: true)
         }
     }

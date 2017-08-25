@@ -14,6 +14,7 @@ import FirebaseDatabase
 
 public class DataAccessUtilities {
     static let sharedInstance = DataAccessUtilities()
+    static var itemCountHandles = [UInt]()
     
     static func getCollectionsList(handler: @escaping (_ collectionsList: [CollectionType]) ->Void) {
         let uid = Auth.auth().currentUser?.uid
@@ -133,11 +134,29 @@ public class DataAccessUtilities {
             
             if itemID == nil {
                 key = refItemInfo.childByAutoId().key
+            } else {
+                key = itemID
             }
             
             let newItem = ["ownerID": uid, "collectionID" : collectionID, "name": itemName ,"description": description, "itemID": key, "imageID": imageID, "imageURL": imageURL, "dateAdded": DateTimeUtilities.getTimestamp()] as [String : Any]
             
             refItemInfo.child(key).setValue(newItem)
+        }
+    }
+    
+    static func copyItem(item: ItemType, toCollectionID: String) {
+        if item.collectionID != toCollectionID {
+            if let image = item.itemImage {
+                let imageData = UIImagePNGRepresentation(image)!
+                
+                self.saveImage(imageData: imageData, collectionID: toCollectionID, handler: { (success, imageURL, imageKey) in
+                    if success {
+                        saveItemInfo(itemName: item.itemName, description: item.description, imageID: imageKey, imageURL: imageURL, collectionID: toCollectionID, itemID: nil)
+                    }
+                })
+            } else {
+                saveItemInfo(itemName: item.itemName, description: item.description, imageID: "", imageURL: "", collectionID: toCollectionID, itemID: nil)
+            }
         }
     }
     
@@ -183,13 +202,61 @@ public class DataAccessUtilities {
         })
     }
     
-    static func updateItemCount(collectionID: String, count: Int) {
-        let refCollectionInfo = Database.database().reference().child("collections")
-        
-        if let uid = Auth.auth().currentUser?.uid {
-            let newCollection = ["itemCount": count] as [String : Any]
+    static func signIn(email: String, password:String, completion: @escaping (_ user: User?,_ error: Error?) -> Void) {
+        Auth.auth().signIn(withEmail: email, password: password, completion: { (returnUser, returnError) in
             
-            refCollectionInfo.child(uid).child(collectionID).updateChildValues(newCollection)
+            completion(returnUser, returnError)
+        })
+    }
+    
+    static func signOut() throws {
+        try Auth.auth().signOut()
+    }
+    
+    /**
+     Save user's personal information.
+     - parameters:
+     - uid: Unique ID provided by the user account
+     - firstName: User's first name
+     - lastName: User's last name
+     - email: User's email
+     */
+    static func savePersonalInfo(uid: String, firstName: String, lastName: String, email: String) {
+        let refPersonalInfo = Database.database().reference().child("personalInfo")
+        
+        let newUser = ["uid" : uid, "firstName": firstName, "lastName": lastName, "email": email]
+        
+        refPersonalInfo.child(uid).setValue(newUser)
+    }
+    
+    static func createNewAccount(email: String, password:String, handler: @escaping (_ user: User?, _ error: Error?) ->Void) {
+        Auth.auth().createUser(withEmail: email, password: password, completion: { (returnUser, returnError) in
+            
+            handler(returnUser, returnError)
+        })
+    }
+    
+    static func updateItemCount(collectionID: String) {
+        let refCollectionInfo = Database.database().reference().child("collections")
+        getItemCount(collectionID: collectionID) { (count) in
+            if let uid = Auth.auth().currentUser?.uid {
+                let newCollection = ["itemCount": count] as [String : Any]
+                print(count)
+                refCollectionInfo.child(uid).child(collectionID).updateChildValues(newCollection)
+            }
         }
+    }
+    
+    static func getItemCount(collectionID: String, handler: @escaping (_ itemCount: Int) ->Void) {
+        let itemDataRef = Database.database().reference().child("items").child(collectionID)
+        itemDataRef.observeSingleEvent(of: .value, with: { (snapshot) in
+            let itemSets = snapshot.value as? NSDictionary
+            
+            if let count = itemSets?.count {
+                handler(count)
+            } else {
+                handler(0)
+            }
+        })
     }
 }
