@@ -35,9 +35,11 @@ class ItemCell: UITableViewCell {
                 do {
                     let data = try Data(contentsOf: url)
                     DispatchQueue.main.async {
-                        let image = UIImage(data: data)
-                        self.thumbImage.image = image
-                        item.itemImage = image
+                        if let image = UIImage(data: data) {
+                            self.thumbImage.image = image
+                            item.itemImage = image
+                            DataAccessUtilities.cacheImage(imageID: item.imageID, image: image)
+                        }
                     }
                 } catch {
                     print("Unable to get image!")

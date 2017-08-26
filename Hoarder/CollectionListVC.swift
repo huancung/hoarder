@@ -14,6 +14,7 @@ class CollectionListVC: UIViewController, UITableViewDelegate, UITableViewDataSo
 
     var collectionList = [CollectionType]()
     var willReloadData: Bool = false
+    var willSetCountUpdateObservers = true
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -43,7 +44,6 @@ class CollectionListVC: UIViewController, UITableViewDelegate, UITableViewDataSo
         collectionTableView.reloadData()
     }
     
-    
     @IBAction func addCollectionPressed(_ sender: Any) {
         performSegue(withIdentifier: "NewCollectionSegue", sender: nil)
     }
@@ -54,6 +54,21 @@ class CollectionListVC: UIViewController, UITableViewDelegate, UITableViewDataSo
             return cell
         } else {
             return UITableViewCell()
+        }
+    }
+    
+    func registerItemCountListeners() {
+        for collection in collectionList {
+            print("Register \(collection.collectionID)")
+            DataAccessUtilities.updateItemCount(collectionID: collection.collectionID)
+        }
+    }
+    
+    func resetItemDataChangeOservers() {
+        willSetCountUpdateObservers = true
+        for collection in collectionList {
+            print("Unregister \(collection.collectionID)")
+            DataAccessUtilities.removeAllObservers(collectionID: collection.collectionID)
         }
     }
     
@@ -75,6 +90,23 @@ class CollectionListVC: UIViewController, UITableViewDelegate, UITableViewDataSo
     }
     
     private func populateCollectionData() {
+        BusyModal.startBusyModal(targetViewController: self)
+        DataAccessUtilities.getCollectionsList { (returnedCollectionsList) in
+            self.collectionList = returnedCollectionsList
+            self.setSortOrder(sortBy: self.sortSegController.selectedSegmentIndex)
+            BusyModal.stopBusyModal()
+            self.collectionTableView.reloadData()
+            
+            // On initial view load of this view we register all the count update listeners
+            // it will automatically update the counts for the collections if items are added/removed.
+            if self.willSetCountUpdateObservers {
+                self.willSetCountUpdateObservers = false
+                self.registerItemCountListeners()
+            }
+        }
+    }
+    
+    private func populateAndInitialize() {
         BusyModal.startBusyModal(targetViewController: self)
         DataAccessUtilities.getCollectionsList { (returnedCollectionsList) in
             self.collectionList = returnedCollectionsList

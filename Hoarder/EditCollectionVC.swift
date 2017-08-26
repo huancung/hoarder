@@ -138,6 +138,8 @@ class EditCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewData
         alert.addAction(UIAlertAction(title: "NO!", style: .default) { (alert) in
         })
         alert.addAction(UIAlertAction(title: "YES", style: .default) { (alert) in
+            // Stop any data update observers
+            DataAccessUtilities.removeAllObservers(collectionID: self.collectionObj.collectionID)
             self.deleteCollection()
         })
         self.present(alert, animated: true, completion: nil)

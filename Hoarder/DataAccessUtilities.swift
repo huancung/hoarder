@@ -69,15 +69,18 @@ public class DataAccessUtilities {
      - category: Category of that the collection.
      - description: Description of the collection.
      */
-    static func saveCollectionInfo(collectionName: String, category: String, description: String) {
+    static func saveCollectionInfo(collectionName: String, category: String, description: String) -> String {
         let refCollectionInfo = Database.database().reference().child("collections")
-        
+        var collectionID = ""
         if let uid = Auth.auth().currentUser?.uid {
             let key = refCollectionInfo.child("collections").childByAutoId().key
             let newCollection = ["ownerUid" : uid, "name": collectionName, "category": category ,"description": description, "collectionID": key, "itemCount": 0, "creationDate": DateTimeUtilities.getTimestamp(), "isFavorite": "false"] as [String : Any]
             
             refCollectionInfo.child(uid).child(key).setValue(newCollection)
+            collectionID = key
         }
+        
+        return collectionID
     }
     
     static func deleteCollection(collectionID: String) {
@@ -119,6 +122,8 @@ public class DataAccessUtilities {
             if let error = error {
                 print(error.localizedDescription)
             }
+            // Remove cached image
+            deleteImageFromCache(imageID: imageID)
         }
     }
     
@@ -194,6 +199,7 @@ public class DataAccessUtilities {
                     let dateAddedString = DateTimeUtilities.formatTimeInterval(timeInterval: dateAdded)
                     
                     let item = ItemType(ownerID: ownerID, collectionID: collectionID, itemID: itemID, itemName: name, description: description, imageID: imageID, imageURL: imageURL, dateAdded: dateAdded, dateAddedString: dateAddedString)
+                    
                     item.downloadImage()
                     itemList.append(item)
                 }
@@ -236,11 +242,17 @@ public class DataAccessUtilities {
         })
     }
     
+    static func removeAllObservers(collectionID: String) {
+        let itemDataRef = Database.database().reference().child("items").child(collectionID)
+        itemDataRef.removeAllObservers()
+    }
+    
     static func updateItemCount(collectionID: String) {
         let refCollectionInfo = Database.database().reference().child("collections")
         getItemCount(collectionID: collectionID) { (count) in
             if let uid = Auth.auth().currentUser?.uid {
                 let newCollection = ["itemCount": count] as [String : Any]
+                print("Update \(collectionID)")
                 print(count)
                 refCollectionInfo.child(uid).child(collectionID).updateChildValues(newCollection)
             }
@@ -249,14 +261,54 @@ public class DataAccessUtilities {
     
     static func getItemCount(collectionID: String, handler: @escaping (_ itemCount: Int) ->Void) {
         let itemDataRef = Database.database().reference().child("items").child(collectionID)
-        itemDataRef.observeSingleEvent(of: .value, with: { (snapshot) in
+        itemDataRef.observe(.value, with: { (snapshot) in
             let itemSets = snapshot.value as? NSDictionary
             
             if let count = itemSets?.count {
                 handler(count)
-            } else {
-                handler(0)
             }
         })
+    }
+    
+    
+    static func cacheImage(imageID: String, image: UIImage) {
+        let fileManager = FileManager.default
+        let path = (NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as NSString).appendingPathComponent("\(imageID).png")
+        let imageData = UIImagePNGRepresentation(image)
+        
+        if !fileManager.fileExists(atPath: path) {
+            fileManager.createFile(atPath: path as String, contents: imageData, attributes: nil)
+            print("cached image \(imageID)")
+        }
+        
+    }
+    
+    static func getCachedImage(imageID: String) -> UIImage? {
+        print("get cached image")
+        let fileManager = FileManager.default
+        let path = (NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as NSString).appendingPathComponent("\(imageID).png")
+        if fileManager.fileExists(atPath: path){
+            if let image = UIImage(contentsOfFile: path) {
+                print("Image returned \(imageID)")
+                return image
+            } else {
+                print("Image not found")
+                return nil
+            }
+        }else{
+            print("No Image")
+        }
+        return nil
+    }
+    
+    static func deleteImageFromCache(imageID: String){
+        let fileManager = FileManager.default
+        let path = (NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as NSString).appendingPathComponent("\(imageID).png")
+        if fileManager.fileExists(atPath: path){
+            try! fileManager.removeItem(atPath: path)
+            print("Delete Image \(imageID)")
+        }else{
+            print("Nothing to delete \(imageID)")
+        }
     }
 }

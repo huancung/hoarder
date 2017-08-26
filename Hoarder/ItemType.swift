@@ -97,18 +97,24 @@ public class ItemType {
     }
     
     public func downloadImage() {
-        if _itemImage != nil && !_imageURL.isEmpty {
+        if _itemImage == nil && !_imageURL.isEmpty {
             let url = URL(string: _imageURL)!
             
-            DispatchQueue.global().async {
-                do {
-                    let data = try Data(contentsOf: url)
-                    DispatchQueue.main.async {
-                        let image = UIImage(data: data)
-                        self._itemImage = image
+            if let image = DataAccessUtilities.getCachedImage(imageID: _imageID) {
+                _itemImage = image
+            } else {
+                DispatchQueue.global().async {
+                    do {
+                        let data = try Data(contentsOf: url)
+                        DispatchQueue.main.async {
+                            if let image = UIImage(data: data) {
+                                self._itemImage = image
+                                DataAccessUtilities.cacheImage(imageID: self._imageID, image: image)
+                            }
+                        }
+                    } catch {
+                        print("Unable to get image!")
                     }
-                } catch {
-                    print("Unable to get image!")
                 }
             }
         }

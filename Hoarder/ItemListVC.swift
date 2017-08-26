@@ -127,7 +127,6 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         DataAccessUtilities.getItemsList(collectionID: collectionUID) { (returnItemList) in
             self.itemList = returnItemList.sorted(by: {$0.itemName < $1.itemName})
             self.itemTableView.reloadData()
-            DataAccessUtilities.updateItemCount(collectionID: self.collectionUID)
             BusyModal.stopBusyModalAndShowNav(targetViewController: self)
         }
     }
@@ -336,7 +335,6 @@ class ItemListVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
                     self.populateItemCellData()
                 }
                 
-                DataAccessUtilities.updateItemCount(collectionID: toCollectionID)
                 self.endEditMode()
             } else {
                 AlertUtil.alert(message: "Pick a different collection!", targetViewController: self)

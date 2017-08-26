@@ -38,7 +38,8 @@ class NewCollectionVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataS
             
             AlertUtil.messageThenPop(title: "New Collection Created!", message: "Now you can start adding items to this collection!", targetViewController: self)
             
-            DataAccessUtilities.saveCollectionInfo(collectionName: collectionName, category: category, description: description)
+            let collectionID = DataAccessUtilities.saveCollectionInfo(collectionName: collectionName, category: category, description: description)
+            DataAccessUtilities.updateItemCount(collectionID: collectionID)
             parentVC?.willReloadData = true
         } else {
             AlertUtil.alert(message: "Please add a collection name!", targetViewController: self)
